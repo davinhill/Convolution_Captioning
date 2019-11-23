@@ -52,13 +52,13 @@ import pdb; pdb.set_trace()
 model_vgg = vgg_extraction()
 model_vgg.to(device)
 
-model_cc = conv_captioning()
+model_cc = conv_captioning(args.max_cap_len)
 model_cc.to(device)
 
 
 
 # Initialize optimizer
-optimizer = torch.optim.RMSProp(model_cc.parameters(), lr = args.initial_lr)
+optimizer = torch.optim.RMSprop(model_cc.parameters(), lr = args.initial_lr)
 scheduler = torch.optim.lr_scheduler.StepLR(optimizer, gamma = args.scheduler_gamma, step_size = args.scheduler_stepsize )
 
 # Criterion
@@ -76,6 +76,7 @@ for epoch in range(args.num_epochs):
         image, caption_tknID = image.to(device), caption_tknID.to(device)
 
         img_conv, img_fc = model_vgg(image)
-
+        x = model_cc(caption_tknID, img_fc)
+        import pdb; pdb.set_trace()
 
 

@@ -21,7 +21,7 @@ class vgg_extraction(nn.Module):
 
     def forward(self, x):
         output_conv = self.feature_layers(x)  # output of convolutions layers (for attention calculations)
-        output_fc = self.fc(output_conv)  # output of fc layers (for image embedding)
+        output_fc = self.fc(torch.flatten(output_conv, 1))  # output of fc layers (for image embedding)
         return output_conv, output_fc
 
 
@@ -45,21 +45,26 @@ class attention(nn.Module):
     # Convolution Captioning Model
 # ======================================================
 class conv_captioning(nn.Module):
-    def __init__(self, vocab_size):
+    def __init__(self, max_cap_len):
         super(conv_captioning, self).__init__()
 
-        self.word_embedding0 = nn.embedding(vocab_size, 512)
-        self.word_embedding1 = nn.embedding(512, 512)
+        self.word_embedding0 = nn.Embedding(max_cap_len, 512)
+        self.word_embedding1 = nn.Linear(512, 512)
 
     def forward(self, caption_tknID, img_fc):
 
+        # Embedding Layer
         word_embed = self.word_embedding0(caption_tknID)
         word_embed = self.word_embedding1(word_embed)
+        # word_embed: n x (max_cap_len) x 512
+        # image_embed: n x 512
 
-        input_embed = torch.cat((word_embed, img_fc), 1)
+        # Reshape image embedding & concatenate with word embedding
+        img_embed = img_fc.unsqueeze(1).expand(-1, word_embed.shape[1], -1)
+        input_embed = torch.cat((word_embed, img_embed), 2) # n x (max_cap_len) x 1024
 
 
-        return caption
+        return 0
         
         
         
