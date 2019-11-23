@@ -52,7 +52,7 @@ import pdb; pdb.set_trace()
 model_vgg = vgg_extraction()
 model_vgg.to(device)
 
-model_cc = conv_captioning(args.max_cap_len)
+model_cc = conv_captioning(args.vocab_size)
 model_cc.to(device)
 
 

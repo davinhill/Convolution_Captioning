@@ -45,14 +45,14 @@ class attention(nn.Module):
     # Convolution Captioning Model
 # ======================================================
 class conv_captioning(nn.Module):
-    def __init__(self, max_cap_len):
+    def __init__(self, vocab_size):
         super(conv_captioning, self).__init__()
 
-        self.word_embedding0 = nn.Embedding(max_cap_len, 512)
+        self.word_embedding0 = nn.Embedding(vocab_size, 512)
         self.word_embedding1 = nn.Linear(512, 512)
 
     def forward(self, caption_tknID, img_fc):
-
+        
         # Embedding Layer
         word_embed = self.word_embedding0(caption_tknID)
         word_embed = self.word_embedding1(word_embed)

@@ -85,22 +85,26 @@ def caption_to_id(caption, dictionary, vocab_size, max_cap_len):
 
     # insert unknown token
     for i, tkn in enumerate(caption_tkn):
+        
+        # if caption is longer than max caption length, break.
+        # add 3 for the start/stop token and period.
+        if i == (max_cap_len):
+            break
+
         if (tkn not in dictionary):
             caption_tkn[i] = 'UNK'
 
-        # lookup tokenID
-        caption_tknID[i] = dictionary.get(tkn)
 
         # truncate dictionary based on vocab_size        
-        if caption_tknID[i] >= vocab_size + 4:
+        if caption_tknID[i] >= vocab_size:
             caption_tknID[i] = 3
+        else:
+            # lookup tokenID
+            caption_tknID[i] = dictionary.get(tkn)
 
         # Update Word Mask
         word_mask[i] = 1
 
-        # if caption is longer than max caption length, break.
-        if (i == max_cap_len -1):
-            break
 
 
         # Special Tokens:
