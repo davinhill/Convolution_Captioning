@@ -48,15 +48,18 @@ class conv_captioning(nn.Module):
     def __init__(self, vocab_size):
         super(conv_captioning, self).__init__()
 
-        self.word_embedding = nn.embedding(vocab_size, 512)
+        self.word_embedding0 = nn.embedding(vocab_size, 512)
+        self.word_embedding1 = nn.embedding(512, 512)
 
-    def forward(self, x, image_embed):
+    def forward(self, caption_tknID, img_fc):
 
-        word_embed = self.word_embedding(x)
-        input_embed = torch.cat((word_embed, image_embed), 1)
+        word_embed = self.word_embedding0(caption_tknID)
+        word_embed = self.word_embedding1(word_embed)
+
+        input_embed = torch.cat((word_embed, img_fc), 1)
 
 
-        return x
+        return caption
         
         
         

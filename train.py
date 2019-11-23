@@ -35,6 +35,8 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 trainloader, valloader = load_data(path = args.data_path, batch_size = args.batch_size, vocab_size = args.vocab_size, max_cap_len=args.max_cap_len)
 
+'''
+# test dataloader
 iterator = iter(valloader)
 
 image, caption, caption_tknID, word_mask = next(iterator)
@@ -44,6 +46,9 @@ id_to_word_array = np.load('id_to_word.npy')
 a = id_to_word(caption_tknID, id_to_word_array)
 
 import pdb; pdb.set_trace()
+'''
+
+
 model_vgg = vgg_extraction()
 model_vgg.to(device)
 
@@ -64,4 +69,13 @@ criterion = nn.CrossEntropyLoss()
 # ======================================================
     # Train
 # ======================================================
+
+for epoch in range(args.num_epochs):
+
+    for batchID, (image, _, caption_tknID, word_mask) in enumerate(valloader):
+        image, caption_tknID = image.to(device), caption_tknID.to(device)
+
+        img_conv, img_fc = model_vgg(image)
+
+
 
