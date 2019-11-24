@@ -84,4 +84,3 @@ for epoch in range(args.num_epochs):
         x = model_cc(caption_tknID, img_fc)
         import pdb; pdb.set_trace()
 
-

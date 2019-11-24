@@ -45,7 +45,7 @@ class ConvBlock(nn.Module):
         self.conv = nn.Conv1d(in_channels = input_feat, out_channels = output_feat, kernel_size = kernel_size, padding = kernel_size - 1, stride = 1)
         self.dropout = nn.Dropout(p = dropout_p)
         self.kernel_size = kernel_size
-        self.downsample = nn.Linear(input_feat, output_feat)
+        self.downsample = nn.Linear(input_feat, int(output_feat/2))
 
     def forward(self, x):
         import pdb;pdb.set_trace()
@@ -69,24 +69,23 @@ class ConvBlock(nn.Module):
 class conv_captioning(nn.Module):
     def __init__(self, vocab_size, kernel_size, num_layers, dropout_p, word_feat, input_feat):
         super(conv_captioning, self).__init__()
-
+        import pdb; pdb.set_trace()
         # Embedding Layers
         self.word_embedding0 = nn.Embedding(vocab_size, word_feat)
         self.word_embedding1 = nn.Linear(word_feat, word_feat)
 
         # Convolution layers
         conv_layers = []
-        for i in range(num_layers-1):
+        for i in range(num_layers-1):  # define output channels for convolution operation. Note: Subsequent GLU downsamples features by 1/2
             if i == 0:
-                output_feat = input_feat
+                conv_layers.append(ConvBlock(input_feat, input_feat, kernel_size, dropout_p))
             else:
-                output_feat = input_feat * 2
-            conv_layers.append(ConvBlock(input_feat, kernel_size, dropout_p))
+                conv_layers.append(ConvBlock(int(input_feat/2), input_feat, kernel_size, dropout_p))
         self.conv_n = nn.Sequential(*conv_layers)
 
         # Classification layers
-        self.fc1 = nn.Linear(input_feat / 2, input_feat / 4)
-        self.fc2 = nn.Linear(input_feat / 4, vocab_size)
+        self.fc1 = nn.Linear(int(input_feat / 2), int(input_feat / 4))
+        self.fc2 = nn.Linear(int(input_feat / 4), vocab_size)
 
     def forward(self, caption_tknID, img_fc):
         
@@ -101,13 +100,15 @@ class conv_captioning(nn.Module):
         input_embed = torch.cat((word_embed, img_embed), 2).transpose(1, 2) # n x 1024 x (max_cap_len)
 
         # convolution layers
+        # missing fc layer?
         x = self.conv_n(input_embed) # n x 512 x max_cap_len
-
+        import pdb; pdb.set_trace()
         # classifier layers
         x = x.transpose(1,2)  # n x max_cap_len x 512
         x = self.fc1(x)
         x = F.relu(x)  # n x max_cap_len x 256
-
+        # missing dropout layer?
+        #  
         x = self.fc2(x) # n x max_cap_len x vocab_size
         x = x.transpose(1,2) # n x vocab_size x max_cap_len
 
