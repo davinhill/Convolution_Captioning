@@ -48,7 +48,6 @@ class ConvBlock(nn.Module):
         self.downsample = nn.Linear(input_feat, int(output_feat/2))
 
     def forward(self, x):
-        import pdb;pdb.set_trace()
         identity = x   # skip connection
         x = self.conv(x) 
         x = self.dropout(x)
@@ -69,7 +68,7 @@ class ConvBlock(nn.Module):
 class conv_captioning(nn.Module):
     def __init__(self, vocab_size, kernel_size, num_layers, dropout_p, word_feat, input_feat):
         super(conv_captioning, self).__init__()
-        import pdb; pdb.set_trace()
+
         # Embedding Layers
         self.word_embedding0 = nn.Embedding(vocab_size, word_feat)
         self.word_embedding1 = nn.Linear(word_feat, word_feat)
@@ -102,7 +101,7 @@ class conv_captioning(nn.Module):
         # convolution layers
         # missing fc layer?
         x = self.conv_n(input_embed) # n x 512 x max_cap_len
-        import pdb; pdb.set_trace()
+
         # classifier layers
         x = x.transpose(1,2)  # n x max_cap_len x 512
         x = self.fc1(x)
@@ -111,7 +110,6 @@ class conv_captioning(nn.Module):
         #  
         x = self.fc2(x) # n x max_cap_len x vocab_size
         x = x.transpose(1,2) # n x vocab_size x max_cap_len
-
 
         return x
         

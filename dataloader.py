@@ -54,13 +54,16 @@ class coco_loader(Dataset):
 
         # tokenize caption
         caption_tknID, word_mask = caption_to_id(caption, self.dictionary, self.vocab_size, self.max_cap_len)
+        print(word_mask)
+        print(caption_tknID)
+        return img, caption, torch.LongTensor(caption_tknID), torch.IntTensor(word_mask)
 
-        return img, caption, np.asarray(caption_tknID), np.asarray(word_mask)
 
 # ================================
 # Convert ID to Words
 # ================================
 def id_to_word(tkn_list, conversion_array):
+    tkn_list = tkn_list.cpu().detach().numpy()
     return [conversion_array[tkn] for tkn in tkn_list]
 
 

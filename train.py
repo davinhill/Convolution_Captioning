@@ -40,19 +40,6 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 trainloader, valloader = load_data(path = args.data_path, batch_size = args.batch_size, vocab_size = args.vocab_size, max_cap_len=args.max_cap_len)
 
-'''
-# test dataloader
-iterator = iter(valloader)
-
-image, caption, caption_tknID, word_mask = next(iterator)
-
-# Check that the tokenized caption is correct:
-id_to_word_array = np.load('id_to_word.npy')
-a = id_to_word(caption_tknID, id_to_word_array)
-
-import pdb; pdb.set_trace()
-'''
-
 
 model_vgg = vgg_extraction(args.img_feat)
 model_vgg.to(device)
@@ -77,10 +64,29 @@ criterion = nn.CrossEntropyLoss()
 
 for epoch in range(args.num_epochs):
 
+    epoch_time_start = datetime.now()
+
     for batchID, (image, _, caption_tknID, word_mask) in enumerate(valloader):
-        image, caption_tknID = image.to(device), caption_tknID.to(device)
+        batch_start = datetime.now() 
+        optimizer.zero_grad()
+        image, caption_tknID, word_mask = image.to(device), caption_tknID.to(device), word_mask.to(device)
 
         img_conv, img_fc = model_vgg(image)
-        x = model_cc(caption_tknID, img_fc)
-        import pdb; pdb.set_trace()
+        pred = model_cc(caption_tknID, img_fc)  # n x vocab_size x max_cap_len
 
+        caption_pred = pred.transpose(1, 2).reshape(args.batch_size * args.max_cap_len, -1) # n * max_cap_len x vocab_size (probability dist'n over all words)
+        caption_target = caption_tknID.reshape(args.batch_size * args.max_cap_len, -1)  # n * max_cap_len x 1
+        import pdb; pdb.set_trace()
+        word_mask = word_mask.reshape(args.batch_size * args.max_cap_len, -1).nonzero()[:,0]
+
+        loss = criterion(caption_pred[word_mask, :], caption_target[word_mask, 0])
+
+        loss.backward()
+        optimizer.step()
+
+        epoch_time = datetime.now() - batch_start
+        print("Epoch: %d || Loss: %f || Time: %s" % (epoch, loss, str(epoch_time)))
+
+    
+    epoch_time = datetime.now() - epoch_time_start
+    print("Epoch: %d || Loss: %f || Time: %s" % (epoch, loss, str(epoch_time)))
