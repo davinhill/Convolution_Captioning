@@ -90,4 +90,6 @@ for epoch in range(args.num_epochs):
 
     
     epoch_time = datetime.now() - epoch_time_start
+    print("========================================")
     print("Epoch: %d || Loss: %f || Time: %s" % (epoch, loss, str(epoch_time)))
+    print("========================================")
