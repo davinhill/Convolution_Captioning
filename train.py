@@ -66,26 +66,27 @@ for epoch in range(args.num_epochs):
 
     epoch_time_start = datetime.now()
 
-    for batchID, (image, _, caption_tknID, word_mask) in enumerate(valloader):
+    for batchID, (image, caption, caption_tknID) in enumerate(valloader):
         batch_start = datetime.now() 
         optimizer.zero_grad()
-        image, caption_tknID, word_mask = image.to(device), caption_tknID.to(device), word_mask.to(device)
+        image, caption_tknID = image.to(device), caption_tknID.to(device)
 
         img_conv, img_fc = model_vgg(image)
         pred = model_cc(caption_tknID, img_fc)  # n x vocab_size x max_cap_len
 
-        caption_pred = pred.transpose(1, 2).reshape(args.batch_size * args.max_cap_len, -1) # n * max_cap_len x vocab_size (probability dist'n over all words)
-        caption_target = caption_tknID.reshape(args.batch_size * args.max_cap_len, -1)  # n * max_cap_len x 1
-        import pdb; pdb.set_trace()
-        word_mask = word_mask.reshape(args.batch_size * args.max_cap_len, -1).nonzero()[:,0]
+        batch_size = pred.shape[0] # get current batch size
+        caption_pred = pred.transpose(1, 2).reshape(batch_size * args.max_cap_len, -1) # n * max_cap_len x vocab_size (probability dist'n over all words)
+        caption_target = caption_tknID.reshape(batch_size * args.max_cap_len)  # n * max_cap_len x 1
+        word_mask = caption_target.nonzero().reshape(-1)
 
-        loss = criterion(caption_pred[word_mask, :], caption_target[word_mask, 0])
+        loss = criterion(caption_pred[word_mask, :], caption_target[word_mask])
 
         loss.backward()
         optimizer.step()
 
-        epoch_time = datetime.now() - batch_start
-        print("Epoch: %d || Loss: %f || Time: %s" % (epoch, loss, str(epoch_time)))
+        if batchID % 100 == 0:
+            epoch_time = datetime.now() - batch_start
+            print("Batch: %d || Loss: %f || Time: %s" % (batchID, loss, str(epoch_time)))
 
     
     epoch_time = datetime.now() - epoch_time_start

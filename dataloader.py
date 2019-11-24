@@ -53,10 +53,8 @@ class coco_loader(Dataset):
             img = self.transform(img)
 
         # tokenize caption
-        caption_tknID, word_mask = caption_to_id(caption, self.dictionary, self.vocab_size, self.max_cap_len)
-        print(word_mask)
-        print(caption_tknID)
-        return img, caption, torch.LongTensor(caption_tknID), torch.IntTensor(word_mask)
+        caption_tknID = caption_to_id(caption, self.dictionary, self.vocab_size, self.max_cap_len)
+        return img, caption, torch.LongTensor(caption_tknID)
 
 
 # ================================
@@ -84,7 +82,6 @@ def caption_to_id(caption, dictionary, vocab_size, max_cap_len):
 
     # initialize
     caption_tknID = [0] * (max_cap_len)
-    word_mask = [0] * (max_cap_len)
 
     # insert unknown token
     for i, tkn in enumerate(caption_tkn):
@@ -94,21 +91,19 @@ def caption_to_id(caption, dictionary, vocab_size, max_cap_len):
         if i == (max_cap_len):
             break
 
+        # words not in dictionary
         if (tkn not in dictionary):
-            caption_tkn[i] = 'UNK'
+            tkn = 'UNK'
 
+        # lookup tokenID
+        caption_tknID[i] = dictionary.get(tkn)
 
         # truncate dictionary based on vocab_size        
         if caption_tknID[i] >= vocab_size:
             caption_tknID[i] = 3
-        else:
-            # lookup tokenID
-            caption_tknID[i] = dictionary.get(tkn)
 
-        # Update Word Mask
-        word_mask[i] = 1
-
-
+        if caption_tknID[i] >= vocab_size-5:
+            print(caption_tknID[i])
 
         # Special Tokens:
         # <S>: 1
@@ -116,7 +111,7 @@ def caption_to_id(caption, dictionary, vocab_size, max_cap_len):
         # UNK: 3
 
     # convert word tokens to id
-    return (caption_tknID, word_mask)
+    return (caption_tknID)
 
 
 

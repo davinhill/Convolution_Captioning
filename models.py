@@ -42,7 +42,7 @@ class ConvBlock(nn.Module):
     def __init__(self, input_feat, output_feat, kernel_size, dropout_p):
         super(ConvBlock, self).__init__()       
 
-        self.conv = nn.Conv1d(in_channels = input_feat, out_channels = output_feat, kernel_size = kernel_size, padding = kernel_size - 1, stride = 1)
+        self.conv = nn.utils.weight_norm(nn.Conv1d(in_channels = input_feat, out_channels = output_feat, kernel_size = kernel_size, padding = kernel_size - 1, stride = 1))
         self.dropout = nn.Dropout(p = dropout_p)
         self.kernel_size = kernel_size
         self.downsample = nn.Linear(input_feat, int(output_feat/2))
@@ -71,7 +71,7 @@ class conv_captioning(nn.Module):
 
         # Embedding Layers
         self.word_embedding0 = nn.Embedding(vocab_size, word_feat)
-        self.word_embedding1 = nn.Linear(word_feat, word_feat)
+        self.word_embedding1 = nn.utils.weight_norm(nn.Linear(word_feat, word_feat))
 
         # Convolution layers
         conv_layers = []
@@ -83,8 +83,8 @@ class conv_captioning(nn.Module):
         self.conv_n = nn.Sequential(*conv_layers)
 
         # Classification layers
-        self.fc1 = nn.Linear(int(input_feat / 2), int(input_feat / 4))
-        self.fc2 = nn.Linear(int(input_feat / 4), vocab_size)
+        self.fc1 = nn.utils.weight_norm(nn.Linear(int(input_feat / 2), int(input_feat / 4)))
+        self.fc2 = nn.utils.weight_norm(nn.Linear(int(input_feat / 4), vocab_size))
 
     def forward(self, caption_tknID, img_fc):
         
