@@ -2,6 +2,7 @@ import torch
 from torchvision import models
 import torch.nn as nn
 import numpy as np
+from pycocotools.coco import COCO, COCOeval
 
 import argparse
 import os
@@ -9,6 +10,7 @@ from datetime import datetime
 
 from models import conv_captioning, vgg_extraction
 from dataloader import load_data, id_to_word
+from eval import wordprob_to_string
 
 # ======================================================
     # Input Parameters
@@ -39,7 +41,6 @@ args = parser.parse_args()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 trainloader, valloader = load_data(path = args.data_path, batch_size = args.batch_size, vocab_size = args.vocab_size, max_cap_len=args.max_cap_len)
-
 
 model_vgg = vgg_extraction(args.img_feat)
 model_vgg.to(device)
@@ -80,6 +81,9 @@ for epoch in range(args.num_epochs):
         word_mask = caption_target.nonzero().reshape(-1)
 
         loss = criterion(caption_pred[word_mask, :], caption_target[word_mask])
+
+
+        wordprob_to_string(pred, args)
 
         loss.backward()
         optimizer.step()

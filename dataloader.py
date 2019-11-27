@@ -57,12 +57,6 @@ class coco_loader(Dataset):
         return img, caption, torch.LongTensor(caption_tknID)
 
 
-# ================================
-# Convert ID to Words
-# ================================
-def id_to_word(tkn_list, conversion_array):
-    tkn_list = tkn_list.cpu().detach().numpy()
-    return [conversion_array[tkn] for tkn in tkn_list]
 
 
 # ================================
