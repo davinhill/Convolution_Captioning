@@ -96,5 +96,3 @@ for epoch in range(args.num_epochs):
     print("Epoch: %d || Loss: %f || Time: %s" % (epoch, loss, str(epoch_time)))
     print("========================================")
 
-    example_caption = wordprob_to_string(pred, args)
-    print(example_caption[0])
