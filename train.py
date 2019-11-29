@@ -2,14 +2,13 @@ import torch
 from torchvision import models
 import torch.nn as nn
 import numpy as np
-from pycocotools.coco import COCO, COCOeval
 
 import argparse
 import os
 from datetime import datetime
 
 from models import conv_captioning, vgg_extraction
-from dataloader import load_data, id_to_word
+from dataloader import load_data
 from eval import wordprob_to_string
 
 # ======================================================
@@ -18,11 +17,11 @@ from eval import wordprob_to_string
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('--data_path', type=str, default=os.path.dirname(os.path.realpath(__file__)), help='path where data & annotations are located')
+parser.add_argument('--data_path', type=str, default=os.path.dirname('../coco_data2017/'), help='path where data & annotations are located')
 parser.add_argument('--num_epochs', type=int, default=30)
 parser.add_argument('--vocab_size', type=int, default=9221)
 parser.add_argument('--max_cap_len', type=int, default=15, help = 'maximum caption length')
-parser.add_argument('--batch_size', type=int, default=128)
+parser.add_argument('--batch_size', type=int, default=10)
 parser.add_argument('--initial_lr', type=int, default=5 * np.exp(-5))
 parser.add_argument('--scheduler_gamma', type=int, default=0.1)
 parser.add_argument('--scheduler_stepsize', type=int, default=15)
@@ -83,7 +82,6 @@ for epoch in range(args.num_epochs):
         loss = criterion(caption_pred[word_mask, :], caption_target[word_mask])
 
 
-        wordprob_to_string(pred, args)
 
         loss.backward()
         optimizer.step()
@@ -97,3 +95,6 @@ for epoch in range(args.num_epochs):
     print("========================================")
     print("Epoch: %d || Loss: %f || Time: %s" % (epoch, loss, str(epoch_time)))
     print("========================================")
+
+    example_caption = wordprob_to_string(pred, args)
+    print(example_caption[0])

@@ -1,3 +1,6 @@
+import sys
+sys.path.append('coco-caption')
+
 import os
 import torch
 from torchvision import datasets, transforms

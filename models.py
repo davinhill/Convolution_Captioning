@@ -7,7 +7,7 @@ import torch.nn.functional as F
 # ======================================================
     # VGG16 Model for extracting image features
 # ======================================================
-vgg_pretrained = models.vgg16(pretrained = True, progress = False)
+vgg_pretrained = models.vgg16(pretrained = True)
 class vgg_extraction(nn.Module):
     def __init__(self, img_feat):
         super(vgg_extraction, self).__init__()

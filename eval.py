@@ -1,13 +1,17 @@
+import sys
+sys.path.append('/coco-caption')
+
 import numpy as np
-from pycocotools.coco import COCO, COCOeval
+from pycocotools.coco import COCO
+from pycocoevalcap.eval import COCOEvalCap
 import os
 import json
 import torch.nn.functional as F
-
+'''
 def train_accy(args):
 
-    coco_trainaccy = COCOeval(cocoGT = COCO(os.path.join(args.data_path, 'annotations/captions_val2017.json')))
-
+    coco_trainaccy = COCOEvalCap(cocoGT = COCO(os.path.join(args.data_path, 'annotations/captions_val2017.json')))
+'''
 
 # ================================
 # Convert ID to Words
@@ -34,10 +38,9 @@ def wordprob_to_tknCaption(prob_input, args):
 # ================================
 def wordprob_to_string(prob_input, args):
     import pdb; pdb.set_trace()
-    prob_input.cpu()
+    prob_input = prob_input.cpu().detach()
     wordprob = F.softmax(prob_input, dim = 1)
     tknID = np.argmax(wordprob, axis = 1)
-    tknID.squeeze(1)
 
     id_conversion_array = np.load('id_to_word.npy')
 
@@ -46,9 +49,10 @@ def wordprob_to_string(prob_input, args):
         caption_output.append(id_to_word(tknID[i, :], id_conversion_array))
 
 
-
+'''
 class train_accy():
     def __init__(self):
         super(train_accy).__init__()
 
-    coco_trainaccy = COCOeval(cocoGT = COCO(os.path.join(args.data_path, 'annotations/captions_val2017.json')))
+    coco_trainaccy = COCOEvalCap(cocoGT = COCO(os.path.join(args.data_path, 'annotations/captions_val2017.json')))
+'''
