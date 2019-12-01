@@ -61,7 +61,8 @@ scheduler = torch.optim.lr_scheduler.StepLR(optimizer, gamma = args.scheduler_ga
 # Criterion
 criterion = nn.CrossEntropyLoss()
 
-
+iterator = iter(valloader)
+a, b, c = next(iterator)
 
 # ======================================================
     # Train

@@ -93,9 +93,7 @@ class coco_loader_val(Dataset):
         if self.transform:
             img = self.transform(img)
 
-        # tokenize caption
-        caption_tknID = caption_to_id(caption, self.dictionary, self.vocab_size, self.max_cap_len)
-        return img, caption, torch.LongTensor(caption_tknID), image_id
+        return img, caption, torch.LongTensor(self.image_id[ID])
 
 # ================================
 # Input a single caption (string), add start/end/unknown tokens, then convert to IDs
