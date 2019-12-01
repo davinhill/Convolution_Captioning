@@ -74,26 +74,27 @@ class coco_loader_val(Dataset):
 
         self.transform = transform
         self.path = data_path
-        self.vocab_size = vocab_size
-        self.max_cap_len = max_cap_len
 
-        with open('word_to_id.p', 'rb') as fp:
-            self.dictionary = pickle.load(fp)
 
     def __len__(self):
         return len(self.img_ids)
 
     def __getitem__(self, ID):
-        import pdb; pdb.set_trace()
+
         # load images from disk
-        img_path = self.coco.loadImgs(self.img_id[ID])[0]['file_name']
+        img_path = self.coco.loadImgs(self.img_ids[ID])[0]['file_name']
         img = Image.open(os.path.join(self.path, img_path)).convert('RGB')
 
         # image transforms
         if self.transform:
             img = self.transform(img)
+        '''
+        ann_ids = self.coco.getAnnIds(self.img_ids[ID])
+        cap_dict = self.coco.loadAnns(ann_ids)
+        captions = [item['caption'] for item in cap_dict] 
+        '''
 
-        return img, caption, torch.LongTensor(self.image_id[ID])
+        return img, self.img_ids[ID]
 
 # ================================
 # Input a single caption (string), add start/end/unknown tokens, then convert to IDs
