@@ -70,7 +70,7 @@ class coco_loader_val(Dataset):
     def __init__(self, data_path, ann_path, vocab_size, max_cap_len, transform=None):
 
         self.coco = COCO(ann_path)
-        self.img_ids = self.coco.getImgIDs(imgIds=[])
+        self.img_ids = self.coco.getImgIds(imgIds=[])
 
         self.transform = transform
         self.path = data_path

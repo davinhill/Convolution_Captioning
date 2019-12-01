@@ -47,7 +47,7 @@ def eval_accy(predictions, coco_object):
 # image input should be of shape n x 3 x 224 x 224
 # ================================
 def gen_caption(image, image_model, caption_model, max_cap_len = 15, imgID = None):
-
+    import pdb; pdb.set_trace()
     batch_size = image.shape[0]
     caption_tknID = torch.zeros(batch_size, max_cap_len, dtype = torch.long)# initialize tkn predictions
     caption_tknID[:,0] = 1   # <S> token
@@ -93,7 +93,7 @@ def gen_caption(image, image_model, caption_model, max_cap_len = 15, imgID = Non
             caption_str.append({'image_id': imgID[i], 'caption': output})
         else:
             caption_str.append(output)
-
+    import pdb; pdb.set_trace()
     return caption_str
 
 

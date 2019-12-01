@@ -44,7 +44,7 @@ args = parser.parse_args()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 trainloader, valloader = load_data(path = args.data_path, batch_size = args.batch_size, vocab_size = args.vocab_size, max_cap_len=args.max_cap_len)
-coco = COCO(os.path.join(args.path, 'annotations/captions_train2017.json')) # create coco object for test accuracy calculation
+coco = COCO(os.path.join(args.data_path, 'annotations/captions_val2017.json')) # create coco object for test accuracy calculation
 
 model_vgg = vgg_extraction(args.img_feat)
 model_vgg.to(device)
@@ -87,7 +87,7 @@ for epoch in range(args.num_epochs):
 
         loss = criterion(caption_pred[word_mask, :], caption_target[word_mask])
 
-        test_cap = gen_caption(image, model_vgg, model_cc, imgID)
+        test_cap = gen_caption(image, model_vgg, model_cc, args.max_cap_len, imgID)
         eval_accy(test_cap, coco)
         import pdb; pdb.set_trace()
 
