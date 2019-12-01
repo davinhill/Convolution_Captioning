@@ -35,8 +35,10 @@ def eval_accy(predictions, coco_object):
     import pdb; pdb.set_trace()
     resfile = 'tmp_resfile.json'
     json.dump(predictions, open(resfile, 'w'))
-    coco_eval = COCOEvalCap(coco_object, coco_object.loadRes(resfile))
+    coco_results = coco_object.loadRes(resfile)
 
+    coco_eval = COCOEvalCap(coco_object, coco_results)
+    coco_eval.params['image_id'] = coco_results.getImgIds()
     coco_eval.evaluate()
 
     return 0
@@ -47,7 +49,7 @@ def eval_accy(predictions, coco_object):
 # image input should be of shape n x 3 x 224 x 224
 # ================================
 def gen_caption(image, image_model, caption_model, max_cap_len = 15, imgID = None):
-    import pdb; pdb.set_trace()
+
     batch_size = image.shape[0]
     caption_tknID = torch.zeros(batch_size, max_cap_len, dtype = torch.long)# initialize tkn predictions
     caption_tknID[:,0] = 1   # <S> token
@@ -87,13 +89,12 @@ def gen_caption(image, image_model, caption_model, max_cap_len = 15, imgID = Non
             output = ' '.join(caption_tkn[i][1:caption_tkn.index('</S>')])
         else:
             output = ' '.join(caption_tkn[i][1:])
-        import pdb; pdb.set_trace()
         # either append image ID (dict) or output only captions
         if (imgID is not None):
-            caption_str.append({'image_id': imgID[i], 'caption': output})
+            caption_str.append({'image_id': imgID[i, 0].item(), 'caption': output})
         else:
             caption_str.append(output)
-    import pdb; pdb.set_trace()
+
     return caption_str
 
 
