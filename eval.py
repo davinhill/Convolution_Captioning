@@ -67,10 +67,21 @@ def gen_caption(image, image_model, caption_model, max_cap_len = 15):
     
     # convert IDs to words
     id_conversion_array = np.load('id_to_word.npy')
-    caption_output = [[] for i in range(batch_size)]
+    caption_tkn = [[] for i in range(batch_size)]
     for i in range(batch_size):
-        caption_output[i].append(id_to_word(caption_tknID[i, :], id_conversion_array))
+        caption_tkn[i].append(id_to_word(caption_tknID[i, :], id_conversion_array))
 
+
+    import pdb; pdb.set_trace()
+    # convert word lists to strings
+    caption_str = []
+    for i in range(batch_size):
+        if '</S>' in caption_tkn[i]:
+            ' '.join(caption_tkn[i][0:caption_tkn.index('</S>')])
+        else:
+            ' '.join(caption_tkn[i])
+            
+    import pdb; pdb.set_trace()
     return 0
 
 
