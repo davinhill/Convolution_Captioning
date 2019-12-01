@@ -9,7 +9,7 @@ from datetime import datetime
 
 from models import conv_captioning, vgg_extraction
 from dataloader import load_data
-from eval import wordprob_to_string
+from eval import gen_caption
 
 # ======================================================
     # Input Parameters
@@ -81,7 +81,7 @@ for epoch in range(args.num_epochs):
 
         loss = criterion(caption_pred[word_mask, :], caption_target[word_mask])
 
-
+        test_cap = gen_caption(image, model_vgg, model_cc)
 
         loss.backward()
         optimizer.step()
