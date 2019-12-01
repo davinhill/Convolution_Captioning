@@ -65,6 +65,7 @@ criterion = nn.CrossEntropyLoss()
 for epoch in range(args.num_epochs):
 
     epoch_time_start = datetime.now()
+    model_vgg.eval() # currently not training vgg model
 
     for batchID, (image, caption, caption_tknID) in enumerate(trainloader):
         batch_start = datetime.now() 
