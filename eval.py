@@ -87,7 +87,7 @@ def gen_caption(image, image_model, caption_model, max_cap_len = 15, imgID = Non
             output = ' '.join(caption_tkn[i][1:caption_tkn.index('</S>')])
         else:
             output = ' '.join(caption_tkn[i][1:])
-
+        import pdb; pdb.set_trace()
         # either append image ID (dict) or output only captions
         if (imgID is not None):
             caption_str.append({'image_id': imgID[i], 'caption': output})

@@ -57,7 +57,7 @@ class coco_loader(Dataset):
 
         # tokenize caption
         caption_tknID = caption_to_id(caption, self.dictionary, self.vocab_size, self.max_cap_len)
-        return img, caption, torch.LongTensor(caption_tknID), image_id
+        return img, caption, torch.LongTensor(caption_tknID), torch.LongTensor(image_id)
 
 
 
