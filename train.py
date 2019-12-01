@@ -66,7 +66,7 @@ for epoch in range(args.num_epochs):
 
     epoch_time_start = datetime.now()
 
-    for batchID, (image, caption, caption_tknID) in enumerate(valloader):
+    for batchID, (image, caption, caption_tknID) in enumerate(trainloader):
         batch_start = datetime.now() 
         optimizer.zero_grad()
         image, caption_tknID = image.to(device), caption_tknID.to(device)

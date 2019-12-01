@@ -7,11 +7,21 @@ from pycocoevalcap.eval import COCOEvalCap
 import os
 import json
 import torch.nn.functional as F
-'''
+import torch
+
+
 def train_accy(args):
 
-    coco_trainaccy = COCOEvalCap(cocoGT = COCO(os.path.join(args.data_path, 'annotations/captions_val2017.json')))
-'''
+    #coco_trainaccy = COCOEvalCap(cocoGT = COCO(os.path.join(args.data_path, 'annotations/captions_val2017.json')))
+    prob_input = prob_input.cpu().detach()
+    wordprob = F.softmax(prob_input, dim = 1)
+    tknID = np.argmax(wordprob, axis = 1)
+
+    # convert IDs to words
+    id_conversion_array = np.load('id_to_word.npy')
+    caption_output = []
+    for i in range(tknID.shape[0]):
+        caption_output.append(id_to_word(tknID[i, :], id_conversion_array))
 
 # ================================
 # Convert ID to Words
@@ -21,14 +31,47 @@ def id_to_word(tkn_list, conversion_array):
     return [conversion_array[tkn] for tkn in tkn_list]
 
 
-# ================================
-# Convert a numpy array of word probabilities (pre-softmax) to tokenIDs
-# input should be of dimension n x vocab_size x max_cap_len
-# ================================
-def wordprob_to_tknCaption(prob_input, args):
+def eval_accy():
     return 0
 
 
+# ================================
+# Generate a caption for a given image based on the trained model
+# image input should be of shape n x 3 x 224 x 224
+# ================================
+def gen_caption(image, image_model, caption_model, max_cap_len = 15):
+    import pdb; pdb.set_trace()
+    batch_size = image.shape[0]
+    caption_tknID = torch.zeros(batch_size, max_cap_len)# initialize tkn predictions
+    caption_tknID[:,0] = 1   # <S> token
+
+    # Set models to eval mode and move to GPU
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    image_model.to(device).eval()
+    caption_model.to(device).eval()
+    image, caption_tknID = image.to(device), caption_tknID.to(device)
+
+    # get image features
+    img_conv, img_fc = image_model(image)  
+
+    for i in range(max_cap_len-1):
+        import pdb; pdb.set_trace()
+        # generate model predictions for the next word, based on the previously-"stored" predictions
+        pred = caption_model(caption_tknID, img_fc).cpu().detach()  # n x vocab_size x max_cap_len
+        pred = np.argmax(pred, axis = 1)    # n x max_cap_len
+
+        # update "stored" predictions
+        caption_tknID[:, i+1] = pred[:, i+1]
+
+    import pdb; pdb.set_trace()
+    
+    # convert IDs to words
+    id_conversion_array = np.load('id_to_word.npy')
+    caption_output = [[] for i in range(batch_size)]
+    for i in range(batch_size):
+        caption_output[i].append(id_to_word(caption_tknID[i, :], id_conversion_array))
+
+    return 0
 
 
 # ================================
@@ -36,23 +79,13 @@ def wordprob_to_tknCaption(prob_input, args):
 # looks up ID values and removes start/end tokens
 # input should be of dimension n x vocab_size x max_cap_len
 # ================================
-def wordprob_to_string(prob_input, args):
-    import pdb; pdb.set_trace()
-    prob_input = prob_input.cpu().detach()
-    wordprob = F.softmax(prob_input, dim = 1)
-    tknID = np.argmax(wordprob, axis = 1)
-
-    id_conversion_array = np.load('id_to_word.npy')
-
-    caption_output = []
-    for i in range(tknID.shape[0]):
-        caption_output.append(id_to_word(tknID[i, :], id_conversion_array))
+def test_accy(dataloader, caption_model):
+    # should i have a different dataloader for validation that does not tokenize the caption?
+    for batchID, (image, caption, caption_tknID) in enumerate(dataloader):
+    return 0
 
 
-'''
-class train_accy():
-    def __init__(self):
-        super(train_accy).__init__()
 
-    coco_trainaccy = COCOEvalCap(cocoGT = COCO(os.path.join(args.data_path, 'annotations/captions_val2017.json')))
-'''
+
+
+
