@@ -42,7 +42,7 @@ def eval_accy():
 def gen_caption(image, image_model, caption_model, max_cap_len = 15):
     import pdb; pdb.set_trace()
     batch_size = image.shape[0]
-    caption_tknID = torch.zeros(batch_size, max_cap_len)# initialize tkn predictions
+    caption_tknID = torch.zeros(batch_size, max_cap_len, dtype = torch.long)# initialize tkn predictions
     caption_tknID[:,0] = 1   # <S> token
 
     # Set models to eval mode and move to GPU
@@ -55,7 +55,7 @@ def gen_caption(image, image_model, caption_model, max_cap_len = 15):
     img_conv, img_fc = image_model(image)  
 
     for i in range(max_cap_len-1):
-        import pdb; pdb.set_trace()
+
         # generate model predictions for the next word, based on the previously-"stored" predictions
         pred = caption_model(caption_tknID, img_fc).cpu().detach()  # n x vocab_size x max_cap_len
         pred = np.argmax(pred, axis = 1)    # n x max_cap_len
@@ -82,6 +82,7 @@ def gen_caption(image, image_model, caption_model, max_cap_len = 15):
 def test_accy(dataloader, caption_model):
     # should i have a different dataloader for validation that does not tokenize the caption?
     for batchID, (image, caption, caption_tknID) in enumerate(dataloader):
+        print(batchID)
     return 0
 
 
