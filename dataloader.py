@@ -62,6 +62,41 @@ class coco_loader(Dataset):
 
 
 
+# ======================================================
+    # Dataloader for the validation set (loads by imageID instead of annotationID)
+# ======================================================
+class coco_loader_val(Dataset):
+
+    def __init__(self, data_path, ann_path, vocab_size, max_cap_len, transform=None):
+
+        self.coco = COCO(ann_path)
+        self.img_ids = self.coco.getImgIDs(imgIds=[])
+
+        self.transform = transform
+        self.path = data_path
+        self.vocab_size = vocab_size
+        self.max_cap_len = max_cap_len
+
+        with open('word_to_id.p', 'rb') as fp:
+            self.dictionary = pickle.load(fp)
+
+    def __len__(self):
+        return len(self.img_ids)
+
+    def __getitem__(self, ID):
+        import pdb; pdb.set_trace()
+        # load images from disk
+        img_path = self.coco.loadImgs(self.img_id[ID])[0]['file_name']
+        img = Image.open(os.path.join(self.path, img_path)).convert('RGB')
+
+        # image transforms
+        if self.transform:
+            img = self.transform(img)
+
+        # tokenize caption
+        caption_tknID = caption_to_id(caption, self.dictionary, self.vocab_size, self.max_cap_len)
+        return img, caption, torch.LongTensor(caption_tknID), image_id
+
 # ================================
 # Input a single caption (string), add start/end/unknown tokens, then convert to IDs
 # Note: The dictionary must be first truncated to the vocab size
@@ -142,7 +177,7 @@ def load_data(path, batch_size, vocab_size, max_cap_len, n_workers=4):
         )
     trainloader = DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=n_workers)
 
-    valset = coco_loader(data_path=os.path.join(
+    valset = coco_loader_val(data_path=os.path.join(
         path, 'val2017/'), 
         ann_path=os.path.join(path, 'annotations/captions_val2017.json'),
         vocab_size = vocab_size,
