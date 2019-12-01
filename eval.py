@@ -40,7 +40,7 @@ def eval_accy():
 # image input should be of shape n x 3 x 224 x 224
 # ================================
 def gen_caption(image, image_model, caption_model, max_cap_len = 15):
-    import pdb; pdb.set_trace()
+
     batch_size = image.shape[0]
     caption_tknID = torch.zeros(batch_size, max_cap_len, dtype = torch.long)# initialize tkn predictions
     caption_tknID[:,0] = 1   # <S> token
@@ -63,17 +63,14 @@ def gen_caption(image, image_model, caption_model, max_cap_len = 15):
         # update "stored" predictions
         caption_tknID[:, i+1] = pred[:, i+1]
 
-    import pdb; pdb.set_trace()
     
     # convert IDs to words
     id_conversion_array = np.load('id_to_word.npy')
-    #caption_tkn = [[] for i in range(batch_size)]
     caption_tkn = []
     for i in range(batch_size):
         caption_tkn.append(id_to_word(caption_tknID[i, :], id_conversion_array))
 
 
-    import pdb; pdb.set_trace()
     # convert word lists to strings
     caption_str = []
     for i in range(batch_size):
@@ -82,8 +79,7 @@ def gen_caption(image, image_model, caption_model, max_cap_len = 15):
         else:
             caption_str.append(' '.join(caption_tkn[i][1:]))
             
-    import pdb; pdb.set_trace()
-    return 0
+    return caption_str
 
 
 # ================================
