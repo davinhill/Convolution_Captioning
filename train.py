@@ -1,7 +1,11 @@
+import sys
+sys.path.append('coco-caption')
+
 import torch
 from torchvision import models
 import torch.nn as nn
 import numpy as np
+from pycocotools.coco import COCO
 
 import argparse
 import os
@@ -9,7 +13,7 @@ from datetime import datetime
 
 from models import conv_captioning, vgg_extraction
 from dataloader import load_data
-from eval import gen_caption
+from eval import gen_caption, eval_accy
 
 # ======================================================
     # Input Parameters
@@ -40,6 +44,7 @@ args = parser.parse_args()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 trainloader, valloader = load_data(path = args.data_path, batch_size = args.batch_size, vocab_size = args.vocab_size, max_cap_len=args.max_cap_len)
+coco = COCO(os.path.join(args.path, 'annotations/captions_train2017.json')) # create coco object for test accuracy calculation
 
 model_vgg = vgg_extraction(args.img_feat)
 model_vgg.to(device)
@@ -67,7 +72,7 @@ for epoch in range(args.num_epochs):
     epoch_time_start = datetime.now()
     model_vgg.eval() # currently not training vgg model
 
-    for batchID, (image, caption, caption_tknID) in enumerate(trainloader):
+    for batchID, (image, caption, caption_tknID, imgID) in enumerate(trainloader):
         batch_start = datetime.now() 
         optimizer.zero_grad()
         image, caption_tknID = image.to(device), caption_tknID.to(device)
@@ -82,7 +87,9 @@ for epoch in range(args.num_epochs):
 
         loss = criterion(caption_pred[word_mask, :], caption_target[word_mask])
 
-        test_cap = gen_caption(image, model_vgg, model_cc)
+        test_cap = gen_caption(image, model_vgg, model_cc, imgID)
+        eval_accy(test_cap, coco)
+        import pdb; pdb.set_trace()
 
         loss.backward()
         optimizer.step()

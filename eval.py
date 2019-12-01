@@ -12,7 +12,6 @@ import torch
 
 def train_accy(args):
 
-    #coco_trainaccy = COCOEvalCap(cocoGT = COCO(os.path.join(args.data_path, 'annotations/captions_val2017.json')))
     prob_input = prob_input.cpu().detach()
     wordprob = F.softmax(prob_input, dim = 1)
     tknID = np.argmax(wordprob, axis = 1)
@@ -25,13 +24,21 @@ def train_accy(args):
 
 # ================================
 # Convert ID to Words
+# tkn_list should be a single list of tknIDs. Returns a list of words.
 # ================================
 def id_to_word(tkn_list, conversion_array):
     tkn_list = tkn_list.cpu().detach().numpy()
     return [conversion_array[tkn] for tkn in tkn_list]
 
 
-def eval_accy():
+def eval_accy(predictions, coco_object):
+    import pdb; pdb.set_trace()
+    resfile = 'tmp_resfile.json'
+    json.dump(predictions, open(resfile, 'w'))
+    coco_eval = COCOEvalCap(coco_object, coco_object.loadRes(resfile))
+
+    coco_eval.evaluate()
+
     return 0
 
 
@@ -39,7 +46,7 @@ def eval_accy():
 # Generate a caption for a given image based on the trained model
 # image input should be of shape n x 3 x 224 x 224
 # ================================
-def gen_caption(image, image_model, caption_model, max_cap_len = 15):
+def gen_caption(image, image_model, caption_model, max_cap_len = 15, imgID = None):
 
     batch_size = image.shape[0]
     caption_tknID = torch.zeros(batch_size, max_cap_len, dtype = torch.long)# initialize tkn predictions
@@ -74,24 +81,30 @@ def gen_caption(image, image_model, caption_model, max_cap_len = 15):
     # convert word lists to strings
     caption_str = []
     for i in range(batch_size):
+
+        # reduce string length if end token is present
         if '</S>' in caption_tkn[i]:
-            caption_str.append(' '.join(caption_tkn[i][1:caption_tkn.index('</S>')]))
+            output = ' '.join(caption_tkn[i][1:caption_tkn.index('</S>')])
         else:
-            caption_str.append(' '.join(caption_tkn[i][1:]))
-            
+            output = ' '.join(caption_tkn[i][1:])
+
+        # either append image ID (dict) or output only captions
+        if (imgID is not None):
+            caption_str.append({'image_id': imgID[i], 'caption': output})
+        else:
+            caption_str.append(output)
+
     return caption_str
 
 
 # ================================
-# Convert a tokenized caption represented by ID#s to string
-# looks up ID values and removes start/end tokens
-# input should be of dimension n x vocab_size x max_cap_len
 # ================================
-def test_accy(dataloader, caption_model):
+def test_accy(dataloader, image_model, caption_model, args):
     # should i have a different dataloader for validation that does not tokenize the caption?
     for batchID, (image, caption, caption_tknID) in enumerate(dataloader):
-        print(batchID)
+        captions = gen_caption(image, image_model, caption_model, args.max_cap_len)
     return 0
+
 
 
 
