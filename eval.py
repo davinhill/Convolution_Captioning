@@ -41,6 +41,8 @@ def eval_accy(predictions, coco_object):
     coco_eval.params['image_id'] = coco_results.getImgIds()
     coco_eval.evaluate()
 
+    import pdb; pdb.set_trace()
+
     return 0
 
 
