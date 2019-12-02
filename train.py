@@ -85,8 +85,9 @@ for epoch in range(args.num_epochs):
         word_mask = caption_target.nonzero().reshape(-1)
 
         loss = criterion(caption_pred[word_mask, :], caption_target[word_mask])
-
-        test_accy(valloader, coco_testaccy, model_vgg, model_cc, args.max_cap_len)
+        a = datetime.now()
+        accy = test_accy(valloader, coco_testaccy, model_vgg, model_cc, args.max_cap_len)
+        b = datetime.now() - a
         import pdb; pdb.set_trace()
 
         loss.backward()
