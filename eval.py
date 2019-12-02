@@ -41,9 +41,11 @@ def eval_accy(predictions, coco_object):
     coco_eval.params['image_id'] = coco_results.getImgIds()
     coco_eval.evaluate()
 
-    import pdb; pdb.set_trace()
+    output = {}
+    for metric, score in coco_eval.eval.items():
+        output[metric] = score
 
-    return 0
+    return output
 
 
 # ================================
@@ -104,10 +106,11 @@ def gen_caption(image, image_model, caption_model, max_cap_len = 15, imgID = Non
 # ================================
 def test_accy(dataloader, coco_object, image_model, caption_model, max_cap_len):
     # should i have a different dataloader for validation that does not tokenize the caption?
+    pred = []
     for batchID, (image, image_id) in enumerate(dataloader):
-        captions = gen_caption(image, image_model, caption_model, max_cap_len)
-        eval_accy(captions, coco_object)
-    return 0
+        pred.append(gen_caption(image, image_model, caption_model, max_cap_len))
+
+    return eval_accy(pred, coco_object)
 
 
 
