@@ -36,6 +36,7 @@ parser.add_argument('--kernel_size', type=int, default=5, help = 'size of 1d con
 parser.add_argument('--img_feat', type=int, default=512, help = 'number of features in image embedding layer. Should be divisible by 2.')
 parser.add_argument('--word_feat', type=int, default=512, help = 'number of features in word embedding layer. Should be divisible by 2.')
 parser.add_argument('--dropout_p', type=int, default=0.1, help = 'dropout probability parameter')
+parser.add_argument('--train_vgg', type=int, default=8.1, help = 'the number of epochs after which the image extractor network will start training')
 
 args = parser.parse_args()
 
@@ -45,16 +46,15 @@ args = parser.parse_args()
     
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
+# Load Data
 trainloader, valloader = load_data(path = args.data_path, batch_size = args.batch_size, vocab_size = args.vocab_size, max_cap_len=args.max_cap_len)
 coco_testaccy = COCO(os.path.join(args.data_path, 'annotations/captions_val2017.json')) # create coco object for test accuracy calculation
 
+# Initialize Models
 model_vgg = vgg_extraction(args.img_feat)
 model_vgg.to(device)
-
 model_cc = conv_captioning(args.vocab_size, args.kernel_size, args.num_layers, args.dropout_p, args.word_feat, args.img_feat + args.word_feat)
 model_cc.to(device)
-
-
 
 # Initialize optimizer
 optimizer = torch.optim.RMSprop(model_cc.parameters(), lr = args.initial_lr)
@@ -63,6 +63,7 @@ scheduler = torch.optim.lr_scheduler.StepLR(optimizer, gamma = args.scheduler_ga
 # Criterion
 criterion = nn.CrossEntropyLoss()
 
+train_vgg = False  # initialize flag so that the vgg network is not trained at start of training
 
 # ======================================================
     # Train
@@ -71,26 +72,47 @@ criterion = nn.CrossEntropyLoss()
 for epoch in range(args.num_epochs):
 
     epoch_time_start = datetime.now()
-    model_vgg.eval() # currently not training vgg model
+
+    # start training vgg after specified number of epochs
+    if epoch == args.train_vgg:
+        train_vgg = True
+        optimizer_vgg = torch.optim.RMSprop(model_vgg.parameters(), lr = args.initial_lr)
+        scheduler_vgg = torch.optim.lr_scheduler.StepLR(optimizer_vgg, gamma = args.scheduler_gamma, step_size = args.scheduler_stepsize )
+
+    model_cc.train()
+    if train_vgg:
+        model_vgg.train()
+    else:
+        model_vgg.eval() # will putting it in eval mode impact caption training?
+
 
     for batchID, (image, caption, caption_tknID, imgID) in enumerate(trainloader):
         batch_start = datetime.now() 
         optimizer.zero_grad()
+        if train_vgg:
+            optimizer_vgg.zero_grad()
         image, caption_tknID = image.to(device), caption_tknID.to(device)
 
-        img_conv, img_fc = model_vgg(image)
-        pred = model_cc(caption_tknID, img_fc)  # n x vocab_size x max_cap_len
+        # run models
+        img_conv, img_fc = model_vgg(image) # extract image features
+        pred = model_cc(caption_tknID, img_fc)  # generate predicted caption. n x vocab_size x max_cap_len
 
+        # reshape predicted and GT captions for loss calculation
         batch_size = pred.shape[0] # get current batch size
         caption_pred = pred.transpose(1, 2).reshape(batch_size * args.max_cap_len, -1) # n * max_cap_len x vocab_size (probability dist'n over all words)
         caption_target = caption_tknID.reshape(batch_size * args.max_cap_len)  # n * max_cap_len x 1
-        word_mask = caption_target.nonzero().reshape(-1)
+        word_mask = caption_target.nonzero().reshape(-1) # the word mask filters out "unused words" when the GT caption is shorter than the max caption length.
 
-        loss = criterion(caption_pred[word_mask, :], caption_target[word_mask])
+        # calculate Cross-Entropy loss
+        loss = criterion(caption_pred[word_mask, :], caption_target[word_mask])   
 
         loss.backward()
         optimizer.step()
         scheduler.step()
+
+        if train_vgg:
+            optimizer_vgg.step()
+            scheduler_vgg.step()
 
         if batchID % 500 == 0:
             epoch_time = datetime.now() - batch_start
