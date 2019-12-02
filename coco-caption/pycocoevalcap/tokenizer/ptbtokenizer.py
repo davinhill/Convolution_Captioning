@@ -35,13 +35,13 @@ class PTBTokenizer:
         final_tokenized_captions_for_image = {}
         image_id = [k for k, v in list(captions_for_image.items()) for _ in range(len(v))]
         sentences = '\n'.join([c['caption'].replace('\n', ' ') for k, v in list(captions_for_image.items()) for c in v])
-
+        sentences = sentences.encode()
         # ======================================================
         # save sentences to temporary file
         # ======================================================
         path_to_jar_dirname=os.path.dirname(os.path.abspath(__file__))
         tmp_file = tempfile.NamedTemporaryFile(delete=False, dir=path_to_jar_dirname)
-        tmp_file.write(sentences.encode())
+        tmp_file.write(sentences)
         tmp_file.close()
 
         # ======================================================
