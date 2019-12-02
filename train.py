@@ -1,3 +1,6 @@
+import os
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
+
 import sys
 sys.path.append('coco-caption')
 
@@ -8,7 +11,6 @@ import numpy as np
 from pycocotools.coco import COCO
 
 import argparse
-import os
 from datetime import datetime
 
 from models import conv_captioning, vgg_extraction
@@ -85,21 +87,22 @@ for epoch in range(args.num_epochs):
         word_mask = caption_target.nonzero().reshape(-1)
 
         loss = criterion(caption_pred[word_mask, :], caption_target[word_mask])
-        a = datetime.now()
-        accy = test_accy(valloader, coco_testaccy, model_vgg, model_cc, args.max_cap_len)
-        b = datetime.now() - a
-        import pdb; pdb.set_trace()
 
         loss.backward()
         optimizer.step()
 
-        if batchID % 100 == 0:
+        if batchID % 500 == 0:
             epoch_time = datetime.now() - batch_start
             print("Batch: %d || Loss: %f || Time: %s" % (batchID, loss, str(epoch_time)))
 
     
+    accy = test_accy(valloader, coco_testaccy, model_vgg, model_cc, args.max_cap_len)
     epoch_time = datetime.now() - epoch_time_start
     print("========================================")
     print("Epoch: %d || Loss: %f || Time: %s" % (epoch, loss, str(epoch_time)))
+    print(accy['Bleu_1'])
+    print(accy['Bleu_2'])
+    print(accy['Bleu_3'])
+    print(accy['Bleu_4'])
     print("========================================")
 
