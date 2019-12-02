@@ -133,9 +133,6 @@ def caption_to_id(caption, dictionary, vocab_size, max_cap_len):
         if caption_tknID[i] >= vocab_size:
             caption_tknID[i] = 3
 
-        if caption_tknID[i] >= vocab_size-5:
-            print(caption_tknID[i])
-
         # Special Tokens:
         # <S>: 1
         # </S>: 2
