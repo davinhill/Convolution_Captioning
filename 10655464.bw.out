@@ -1,0 +1,96 @@
+----------------------------------------
+Begin Torque Prologue on nid25333
+at Sun Dec  1 21:38:29 CST 2019
+Job Id:			10655464.bw
+Username:		tra178
+Group:			TRAIN_bayw
+Job name:		CC_proj
+Requested resources:	nodes=01:ppn=16:xk,walltime=06:00:00,neednodes=01:ppn=16:xk
+Queue:			normal
+Account:		bayw
+End Torque Prologue:  0.096 elapsed
+----------------------------------------
+
+
+
+
+loading annotations into memory...
+0:00:02.756845
+creating index...
+index created!
+loading annotations into memory...
+0:00:00.122891
+creating index...
+index created!
+loading annotations into memory...
+0:00:00.095307
+creating index...
+index created!
+Batch: 0 || Loss: 9.120218 || Time: 0:00:02.426055
+Batch: 500 || Loss: 3.157118 || Time: 0:00:00.786856
+Batch: 1000 || Loss: 2.892162 || Time: 0:00:00.801559
+Batch: 1500 || Loss: 2.258279 || Time: 0:00:00.797924
+Batch: 2000 || Loss: 2.107846 || Time: 0:00:00.805203
+9218
+Batch: 2500 || Loss: 1.958449 || Time: 0:00:00.787287
+Batch: 3000 || Loss: 1.627183 || Time: 0:00:00.785475
+9219
+Batch: 3500 || Loss: 4.059029 || Time: 0:00:00.786701
+Batch: 4000 || Loss: 2.814448 || Time: 0:00:00.786572
+Batch: 4500 || Loss: 2.005213 || Time: 0:00:00.787523
+Batch: 5000 || Loss: 1.326784 || Time: 0:00:00.785132
+Batch: 5500 || Loss: 2.054256 || Time: 0:00:00.785367
+Batch: 6000 || Loss: 2.285126 || Time: 0:00:00.787174
+Batch: 6500 || Loss: 2.252288 || Time: 0:00:00.783978
+Batch: 7000 || Loss: 2.438004 || Time: 0:00:00.786412
+Batch: 7500 || Loss: 2.341613 || Time: 0:00:00.785061
+9219
+Batch: 8000 || Loss: 1.687594 || Time: 0:00:00.787289
+Batch: 8500 || Loss: 2.327474 || Time: 0:00:00.786225
+Batch: 9000 || Loss: 1.834093 || Time: 0:00:00.786831
+Batch: 9500 || Loss: 2.106350 || Time: 0:00:00.785685
+Batch: 10000 || Loss: 2.039698 || Time: 0:00:00.785865
+Batch: 10500 || Loss: 3.002786 || Time: 0:00:00.787115
+Batch: 11000 || Loss: 2.704623 || Time: 0:00:00.786310
+Batch: 11500 || Loss: 1.486058 || Time: 0:00:00.785720
+Batch: 12000 || Loss: 7.915116 || Time: 0:00:00.785643
+Batch: 12500 || Loss: 2.081436 || Time: 0:00:00.786211
+9220
+9216
+Batch: 13000 || Loss: 3.348555 || Time: 0:00:00.786050
+Batch: 13500 || Loss: 2.723744 || Time: 0:00:00.786310
+9217
+Batch: 14000 || Loss: 2.709699 || Time: 0:00:00.787294
+Batch: 14500 || Loss: 2.665136 || Time: 0:00:00.787430
+Batch: 15000 || Loss: 3.513410 || Time: 0:00:00.785088
+Batch: 15500 || Loss: 2.709825 || Time: 0:00:00.787409
+Batch: 16000 || Loss: 2.929775 || Time: 0:00:00.786937
+Batch: 16500 || Loss: 2.210555 || Time: 0:00:00.784761
+Batch: 17000 || Loss: 2.158080 || Time: 0:00:00.786346
+Batch: 17500 || Loss: 6.829756 || Time: 0:00:00.784481
+Batch: 18000 || Loss: 157.827347 || Time: 0:00:00.787061
+Batch: 18500 || Loss: 4.219626 || Time: 0:00:00.786401
+Batch: 19000 || Loss: 2.985638 || Time: 0:00:00.786640
+9219
+Batch: 19500 || Loss: 2.813808 || Time: 0:00:00.784721
+Batch: 20000 || Loss: 3.439291 || Time: 0:00:00.785197
+Batch: 20500 || Loss: 3.060217 || Time: 0:00:00.785503
+Batch: 21000 || Loss: 3.744047 || Time: 0:00:00.785658
+9217
+9220
+Batch: 21500 || Loss: 3.096569 || Time: 0:00:00.786219
+Batch: 22000 || Loss: 3.204051 || Time: 0:00:00.785461
+Batch: 22500 || Loss: 4.451858 || Time: 0:00:00.785287
+Batch: 23000 || Loss: 6.026612 || Time: 0:00:00.787229
+9217
+Batch: 23500 || Loss: 3.444928 || Time: 0:00:00.786899
+9218
+Batch: 24000 || Loss: 3.138700 || Time: 0:00:00.788345
+Batch: 24500 || Loss: 3.013080 || Time: 0:00:00.785347
+9216
+9219
+Batch: 25000 || Loss: 5.339258 || Time: 0:00:00.788071
+Batch: 25500 || Loss: 2.907218 || Time: 0:00:00.784488
+Batch: 26000 || Loss: 3.763972 || Time: 0:00:00.786521
+Batch: 26500 || Loss: 3.428549 || Time: 0:00:00.783957
+Batch: 27000 || Loss: 2.983362 || Time: 0:00:00.787699

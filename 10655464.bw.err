@@ -1,0 +1,5 @@
+/var/spool/torque/mom_priv/jobs/10655464.bw.SC: line 22: cd: /u/training/instr030/code_directory: Permission denied
+[nltk_data] Error loading punkt: <urlopen error [SSL:
+[nltk_data]     CERTIFICATE_VERIFY_FAILED] certificate verify failed
+[nltk_data]     (_ssl.c:727)>
+aprun: Apid 82312606: Caught signal Terminated, sending to application
