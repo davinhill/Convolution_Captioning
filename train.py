@@ -28,15 +28,16 @@ parser.add_argument('--num_epochs', type=int, default=30)
 parser.add_argument('--vocab_size', type=int, default=9221)
 parser.add_argument('--max_cap_len', type=int, default=15, help = 'maximum caption length')
 parser.add_argument('--batch_size', type=int, default=10)
-parser.add_argument('--initial_lr', type=int, default=5 * np.exp(-5))
-parser.add_argument('--scheduler_gamma', type=int, default=0.1)
+parser.add_argument('--initial_lr', type=float, default=5 * np.exp(-5))
+parser.add_argument('--scheduler_gamma', type=float, default=0.1)
 parser.add_argument('--scheduler_stepsize', type=int, default=15)
 parser.add_argument('--num_layers', type=int, default=3, help = 'number of convolution layers')
-parser.add_argument('--kernel_size', type=int, default=5, help = 'size of 1d convolution kernel')
+parser.add_argument('--kernel_size', type=int, default=5, help = 'size of 1d convolution kernel (how many words in the past?)')
 parser.add_argument('--img_feat', type=int, default=512, help = 'number of features in image embedding layer. Should be divisible by 2.')
 parser.add_argument('--word_feat', type=int, default=512, help = 'number of features in word embedding layer. Should be divisible by 2.')
-parser.add_argument('--dropout_p', type=int, default=0.1, help = 'dropout probability parameter')
-parser.add_argument('--train_vgg', type=int, default=8.1, help = 'the number of epochs after which the image extractor network will start training')
+parser.add_argument('--dropout_p', type=float, default=0.1, help = 'dropout probability parameter')
+parser.add_argument('--train_vgg', type=int, default=8, help = 'the number of epochs after which the image extractor network will start training')
+parser.add_argument('--attention', type=bool, default=False, help = 'use attention?')
 
 args = parser.parse_args()
 
@@ -95,7 +96,11 @@ for epoch in range(args.num_epochs):
 
         # run models
         img_conv, img_fc = model_vgg(image) # extract image features
-        pred = model_cc(caption_tknID, img_fc)  # generate predicted caption. n x vocab_size x max_cap_len
+
+        if args.attention:
+            placeholder = 0
+        else:
+            pred = model_cc(caption_tknID, img_fc)  # generate predicted caption. n x vocab_size x max_cap_len
 
         # reshape predicted and GT captions for loss calculation
         batch_size = pred.shape[0] # get current batch size

@@ -28,9 +28,9 @@ class vgg_extraction(nn.Module):
 # ======================================================
     # Attention Model
 # ======================================================
-class attention(nn.Module):
+class AttnBlock(nn.Module):
     def __init__(self, vocab_size):
-        super(attention, self).__init__()
+        super(AttnBlock, self).__init__()
 
 
     def forward(self, x):
