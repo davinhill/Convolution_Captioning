@@ -90,6 +90,7 @@ for epoch in range(args.num_epochs):
 
         loss.backward()
         optimizer.step()
+        scheduler.step()
 
         if batchID % 500 == 0:
             epoch_time = datetime.now() - batch_start
