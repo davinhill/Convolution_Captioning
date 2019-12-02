@@ -100,10 +100,11 @@ def gen_caption(image, image_model, caption_model, max_cap_len = 15, imgID = Non
 
 # ================================
 # ================================
-def test_accy(dataloader, image_model, caption_model, args):
+def test_accy(dataloader, coco_object, image_model, caption_model, max_cap_len):
     # should i have a different dataloader for validation that does not tokenize the caption?
-    for batchID, (image, caption, caption_tknID) in enumerate(dataloader):
-        captions = gen_caption(image, image_model, caption_model, args.max_cap_len)
+    for batchID, (image, image_id) in enumerate(dataloader):
+        captions = gen_caption(image, image_model, caption_model, max_cap_len)
+        eval_accy(captions, coco_object)
     return 0
 
 

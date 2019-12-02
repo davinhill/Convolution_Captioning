@@ -28,7 +28,7 @@ class PTBTokenizer:
         cmd = ['java', '-cp', STANFORD_CORENLP_3_4_1_JAR, \
                 'edu.stanford.nlp.process.PTBTokenizer', \
                 '-preserveLines', '-lowerCase']
-
+        import pdb; pdb.set_trace()
         # ======================================================
         # prepare data for PTB Tokenizer
         # ======================================================
