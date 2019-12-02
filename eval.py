@@ -32,7 +32,6 @@ def id_to_word(tkn_list, conversion_array):
 
 
 def eval_accy(predictions, coco_object):
-    import pdb; pdb.set_trace()
     resfile = 'tmp_resfile.json'
     json.dump(predictions, open(resfile, 'w'))
     coco_results = coco_object.loadRes(resfile)
