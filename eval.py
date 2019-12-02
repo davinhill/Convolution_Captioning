@@ -89,7 +89,7 @@ def gen_caption(image, image_model, caption_model, max_cap_len = 15, imgID = Non
 
         # reduce string length if end token is present
         if '</S>' in caption_tkn[i]:
-            output = ' '.join(caption_tkn[i][1:caption_tkn.index('</S>')])
+            output = ' '.join(caption_tkn[i][1:caption_tkn[i].index('</S>')])
         else:
             output = ' '.join(caption_tkn[i][1:])
         # either append image ID (dict) or output only captions
@@ -108,7 +108,8 @@ def test_accy(dataloader, coco_object, image_model, caption_model, max_cap_len):
         pred = []
         for batchID, (image, image_id) in enumerate(dataloader):
             pred.extend(gen_caption(image, image_model, caption_model, max_cap_len, image_id))
-
+    print(pred[0])
+    print(pred[1])
     return eval_accy(pred, coco_object)
 
 

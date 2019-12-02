@@ -119,7 +119,7 @@ for epoch in range(args.num_epochs):
             optimizer_vgg.step()
             scheduler_vgg.step()
 
-        if batchID % 500 == 0:
+        if batchID % 100 == 0:
             epoch_time = datetime.now() - batch_start
             print("Batch: %d || Loss: %f || Time: %s" % (batchID, loss, str(epoch_time)))
 

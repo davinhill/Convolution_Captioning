@@ -101,13 +101,14 @@ class conv_captioning(nn.Module):
 
         # convolution layers
         x = self.conv_n(input_embed) # n x 512 x max_cap_len
-        x = F.dropout(x, p = self.dropout_p)
+        #x = F.dropout(x, p = self.dropout_p)
 
         # note: I'm following the source code, however I'm not sure why there isn't a relu between the two FC layers? Also, why the extra 2 dropout layers?
         # classifier layers
         x = x.transpose(1,2)  # n x max_cap_len x 512
         x = self.fc1(x) # n x max_cap_len x 256
-        x = F.dropout(x, p = self.dropout_p)
+        #x = F.dropout(x, p = self.dropout_p)
+        x = F.relu(x)
         
         x = self.fc2(x) # n x max_cap_len x vocab_size
         x = x.transpose(1,2) # n x vocab_size x max_cap_len
