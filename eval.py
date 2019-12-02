@@ -32,7 +32,7 @@ def id_to_word(tkn_list, conversion_array):
 
 
 def eval_accy(predictions, coco_object):
-    import pdb; pdb.set_trace()
+
     resfile = 'tmp_resfile.json'
     json.dump(predictions, open(resfile, 'w'))
     coco_results = coco_object.loadRes(resfile)
@@ -109,7 +109,7 @@ def test_accy(dataloader, coco_object, image_model, caption_model, max_cap_len):
     pred = []
     for batchID, (image, image_id) in enumerate(dataloader):
         pred.append(gen_caption(image, image_model, caption_model, max_cap_len))
-
+    import pdb; pdb.set_trace()
     return eval_accy(pred, coco_object)
 
 
