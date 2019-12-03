@@ -94,10 +94,19 @@ for epoch in range(args.num_epochs):
         optimizer.zero_grad()
         if train_vgg:
             optimizer_vgg.zero_grad()
-        image, caption_tknID = image.to(device), caption_tknID.to(device)
+        image, caption_tknID = image.to(device), caption_tknID.to(device)   #image.shape: batch_size x 3 x 224 x 224
+        
 
-        # run models
+
+        # run image feature extraction model
         img_conv, img_fc = model_vgg(image) # extract image features
+        #img_conv.shape: batch_size x 512 x 7 x 7, img_fc.shape: batch_size x 512
+
+        # repeat image features for the number of captions (5)
+        img_fc = img_fc.unsqueeze(1).expand(-1, args.num_caps_per_img, -1) # batch_size x 5 x 512
+        img_fc = img_fc.reshape(args.batch_size * args.num_caps_per_img, -1)
+        img_conv = img_conv.unsqueeze(1).expand(-1, args.num_caps_per_img, -1, -1, -1)
+        img_conv = img_conv.reshape(args.batch_size * args.num_caps_per_img, 512, 7, 7)
 
         if args.attention:
             placeholder = 0
