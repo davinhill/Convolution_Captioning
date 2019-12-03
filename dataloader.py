@@ -25,7 +25,7 @@ class coco_loader(Dataset):
     def __init__(self, data_path, ann_path, vocab_size, max_cap_len, transform=None):
 
         self.coco = COCO(ann_path)
-        self.ann_ids = self.coco.getAnnIds(imgIds=[])
+        self.img_ids = self.coco.getImgIds(imgIds=[])
 
         self.transform = transform
         self.path = data_path
