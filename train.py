@@ -71,7 +71,7 @@ train_vgg = False  # initialize flag so that the vgg network is not trained at s
 # ======================================================
 
 for epoch in range(args.num_epochs):
-    import pdb; pdb.set_trace()
+
     epoch_time_start = datetime.now()
 
     # start training vgg after specified number of epochs
@@ -88,6 +88,7 @@ for epoch in range(args.num_epochs):
 
 
     for batchID, (image, caption, caption_tknID, imgID) in enumerate(trainloader):
+        import pdb; pdb.set_trace()
         batch_start = datetime.now() 
         optimizer.zero_grad()
         if train_vgg:
