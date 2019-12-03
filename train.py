@@ -38,6 +38,7 @@ parser.add_argument('--word_feat', type=int, default=512, help = 'number of feat
 parser.add_argument('--dropout_p', type=float, default=0.1, help = 'dropout probability parameter')
 parser.add_argument('--train_vgg', type=int, default=8, help = 'the number of epochs after which the image extractor network will start training')
 parser.add_argument('--attention', type=bool, default=False, help = 'use attention?')
+parser.add_argument('--num_caps_per_img', type=int, default=5, help = 'number of captions per image in training set (should be 5 in coco)')
 
 args = parser.parse_args()
 
@@ -48,7 +49,7 @@ args = parser.parse_args()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 # Load Data
-trainloader, valloader = load_data(path = args.data_path, batch_size = args.batch_size, vocab_size = args.vocab_size, max_cap_len=args.max_cap_len)
+trainloader, valloader = load_data(path = args.data_path, batch_size = args.batch_size, vocab_size = args.vocab_size, max_cap_len=args.max_cap_len, max_caps_per_img = args.max_caps_per_img)
 coco_testaccy = COCO(os.path.join(args.data_path, 'annotations/captions_val2017.json')) # create coco object for test accuracy calculation
 
 # Initialize Models

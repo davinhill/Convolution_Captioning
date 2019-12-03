@@ -22,7 +22,7 @@ nltk.download('punkt')
 # ================================
 class coco_loader(Dataset):
 
-    def __init__(self, data_path, ann_path, vocab_size, max_cap_len, transform=None):
+    def __init__(self, data_path, ann_path, vocab_size, max_cap_len, transform=None, num_caps_per_img = 5):
 
         self.coco = COCO(ann_path)
         self.img_ids = self.coco.getImgIds(imgIds=[])
@@ -35,10 +35,10 @@ class coco_loader(Dataset):
         with open('word_to_id.p', 'rb') as fp:
             self.dictionary = pickle.load(fp)
         
-        self.num_captions_per_img = 5
+        self.num_captions_per_img = num_caps_per_img
 
     def __len__(self):
-        return len(self.ann_ids)
+        return len(self.img_ids)
 
     def __getitem__(self, ID):
         
@@ -50,9 +50,7 @@ class coco_loader(Dataset):
 
         # image transforms
         if self.transform:
-            img = self.transform(img)  # 1 x 3 x 224 x 224
-        
-        img = img.unsqueeze(4).expand(-1, -1, -1, -1, self.num_captions_per_img) # 1 x 3 x 224 x 224 x 5
+            img = self.transform(img)  # 3 x 224 x 224
 
         ann_ids = self.coco.getAnnIds(sample_image_id)
         cap_dict = self.coco.loadAnns(ann_ids)
@@ -60,9 +58,10 @@ class coco_loader(Dataset):
 
         caption_tknID = []
         for i in range(self.num_captions_per_img):
-            caption_tknID[i] = caption_to_id(caption[i], self.dictionary, self.vocab_size, self.max_cap_len)
+            caption_tknID.append(caption_to_id(caption[i], self.dictionary, self.vocab_size, self.max_cap_len))
 
-
+        print(len(caption))
+        print(len(caption[0]))
         return img, caption, torch.LongTensor(caption_tknID), sample_image_id
     
 
@@ -156,7 +155,7 @@ def caption_to_id(caption, dictionary, vocab_size, max_cap_len):
 # ================================
 # Load Data Function
 # ================================
-def load_data(path, batch_size, vocab_size, max_cap_len, n_workers=4):
+def load_data(path, batch_size, vocab_size, max_cap_len, n_workers=4, max_caps_per_img=5):
 
     data_transforms = {
         'train': transforms.Compose([
@@ -177,7 +176,8 @@ def load_data(path, batch_size, vocab_size, max_cap_len, n_workers=4):
         ann_path=os.path.join(path, 'annotations/captions_train2017.json'),
         vocab_size = vocab_size,
         max_cap_len = max_cap_len,
-        transform=data_transforms['train']
+        transform=data_transforms['train'],
+        max_caps_per_img = max_caps_per_img,
         )
     trainloader = DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=n_workers)
 
