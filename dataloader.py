@@ -1,3 +1,6 @@
+import os
+os.chdir(os.path.dirname(os.path.realpath(__file__))) # needed for BlueWaters
+
 import sys
 sys.path.append('coco-caption')
 
