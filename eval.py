@@ -1,3 +1,6 @@
+import os
+os.chdir(os.path.dirname(os.path.realpath(__file__))) # needed for BlueWaters
+
 import sys
 sys.path.append('/coco-caption')
 
@@ -10,18 +13,6 @@ import torch.nn.functional as F
 import torch
 
 
-def train_accy(args):
-
-    prob_input = prob_input.cpu().detach()
-    wordprob = F.softmax(prob_input, dim = 1)
-    tknID = np.argmax(wordprob, axis = 1)
-
-    # convert IDs to words
-    id_conversion_array = np.load('id_to_word.npy')
-    caption_output = []
-    for i in range(tknID.shape[0]):
-        caption_output.append(id_to_word(tknID[i, :], id_conversion_array))
-
 # ================================
 # Convert ID to Words
 # tkn_list should be a single list of tknIDs. Returns a list of words.
@@ -30,7 +21,25 @@ def id_to_word(tkn_list, conversion_array):
     tkn_list = tkn_list.cpu().detach().numpy()
     return [conversion_array[tkn] for tkn in tkn_list]
 
+# ================================
+# convert list of tokenized words to string
+# input is a single list of tokenized words
+# ================================
+def wordlist_to_string(caption_tkn):
 
+    # reduce string length if end token is present
+    if '</S>' in caption_tkn:
+        output = ' '.join(caption_tkn[1:caption_tkn.index('</S>')])
+    else:
+        output = ' '.join(caption_tkn[1:])
+    
+    return output
+
+
+# ================================
+# evaluate accuracy metrics given predictions (uses CocoEvalAPI)
+# 'predictions' is a list of dictionary objects, with 'image_id' and 'caption'
+# ================================
 def eval_accy(predictions, coco_object):
     resfile = 'tmp_resfile.json'
     json.dump(predictions, open(resfile, 'w'))
@@ -50,6 +59,8 @@ def eval_accy(predictions, coco_object):
 # ================================
 # Generate a caption for a given image based on the trained model
 # image input should be of shape n x 3 x 224 x 224
+# if imgID (the list of image IDs assocated with the provided images), this function will return a list of dictionary
+# objects, with 'image_id' and 'caption', for use with the CocoEvalAPI.
 # ================================
 def gen_caption(image, image_model, caption_model, max_cap_len = 15, imgID = None):
 
@@ -87,11 +98,9 @@ def gen_caption(image, image_model, caption_model, max_cap_len = 15, imgID = Non
     caption_str = []
     for i in range(batch_size):
 
-        # reduce string length if end token is present
-        if '</S>' in caption_tkn[i]:
-            output = ' '.join(caption_tkn[i][1:caption_tkn[i].index('</S>')])
-        else:
-            output = ' '.join(caption_tkn[i][1:])
+        # convert tokenized words to string
+        output = wordlist_to_string(caption_tkn[i])
+
         # either append image ID (dict) or output only captions
         if (imgID is not None):
             caption_str.append({'image_id': imgID[i].item(), 'caption': output})
@@ -102,6 +111,7 @@ def gen_caption(image, image_model, caption_model, max_cap_len = 15, imgID = Non
 
 
 # ================================
+# Calculate test accuracy based on a given dataloader
 # ================================
 def test_accy(dataloader, coco_object, image_model, caption_model, max_cap_len):
     with torch.no_grad():
