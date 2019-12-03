@@ -85,7 +85,6 @@ class conv_captioning(nn.Module):
         # Classification layers
         self.fc1 = nn.utils.weight_norm(nn.Linear(int(input_feat / 2), int(input_feat / 4)))
         self.fc2 = nn.utils.weight_norm(nn.Linear(int(input_feat / 4), vocab_size))
-        self.dropout_p = dropout_p
 
     def forward(self, caption_tknID, img_fc):
         
