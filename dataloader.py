@@ -52,16 +52,16 @@ class coco_loader(Dataset):
         if self.transform:
             img = self.transform(img)  # 3 x 224 x 224
 
+        # get captions from image ID
         ann_ids = self.coco.getAnnIds(sample_image_id)
         cap_dict = self.coco.loadAnns(ann_ids)
         caption = [item['caption'] for item in cap_dict]  # list of 5 captions
 
+        # tokenize caption and convert to IDs
         caption_tknID = []
         for i in range(self.num_captions_per_img):
             caption_tknID.append(caption_to_id(caption[i], self.dictionary, self.vocab_size, self.max_cap_len))
 
-        print(len(caption))
-        print(len(caption[0]))
         return img, caption, torch.LongTensor(caption_tknID), sample_image_id
     
 
@@ -101,7 +101,7 @@ class coco_loader_val(Dataset):
         captions = [item['caption'] for item in cap_dict] 
         '''
 
-        return img, torch.LongTensor([self.img_ids[ID]])
+        return img, self.img_ids[ID]
 
 # ================================
 # Input a single caption (string), add start/end/unknown tokens, then convert to IDs

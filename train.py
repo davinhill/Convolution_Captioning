@@ -94,9 +94,14 @@ for epoch in range(args.num_epochs):
         optimizer.zero_grad()
         if train_vgg:
             optimizer_vgg.zero_grad()
-        image, caption_tknID = image.to(device), caption_tknID.to(device)   #image.shape: batch_size x 3 x 224 x 224
-        
+        image, caption_tknID = image.to(device), caption_tknID.to(device)
+        #image.shape: batch_size x 3 x 224 x 224
+        #caption_tknID.shape: batch_size x 5 x max_cap_len
 
+        batch_size = image.shape[0] # get current batch size
+
+        # reshape caption 
+        caption_tknID = caption_tknID.reshape(batch_size * args.num_caps_per_img, args.max_cap_len)
 
         # run image feature extraction model
         img_conv, img_fc = model_vgg(image) # extract image features
@@ -104,9 +109,9 @@ for epoch in range(args.num_epochs):
 
         # repeat image features for the number of captions (5)
         img_fc = img_fc.unsqueeze(1).expand(-1, args.num_caps_per_img, -1) # batch_size x 5 x 512
-        img_fc = img_fc.reshape(args.batch_size * args.num_caps_per_img, -1)
+        img_fc = img_fc.reshape(batch_size * args.num_caps_per_img, -1)
         img_conv = img_conv.unsqueeze(1).expand(-1, args.num_caps_per_img, -1, -1, -1)
-        img_conv = img_conv.reshape(args.batch_size * args.num_caps_per_img, 512, 7, 7)
+        img_conv = img_conv.reshape(batch_size * args.num_caps_per_img, 512, 7, 7)
 
         if args.attention:
             placeholder = 0
@@ -114,7 +119,6 @@ for epoch in range(args.num_epochs):
             pred = model_cc(caption_tknID, img_fc)  # generate predicted caption. n x vocab_size x max_cap_len
 
         # reshape predicted and GT captions for loss calculation
-        batch_size = pred.shape[0] # get current batch size
         caption_pred = pred.transpose(1, 2).reshape(batch_size * args.max_cap_len, -1) # n * max_cap_len x vocab_size (probability dist'n over all words)
         caption_target = caption_tknID.reshape(batch_size * args.max_cap_len)  # n * max_cap_len x 1
         word_mask = caption_target.nonzero().reshape(-1) # the word mask filters out "unused words" when the GT caption is shorter than the max caption length.
@@ -129,7 +133,7 @@ for epoch in range(args.num_epochs):
         if train_vgg:
             optimizer_vgg.step()
             scheduler_vgg.step()
-
+        import pdb; pdb.set_trace()
         if batchID % 100 == 0:
             epoch_time = datetime.now() - batch_start
             print("Batch: %d || Loss: %f || Time: %s" % (batchID, loss, str(epoch_time)))
