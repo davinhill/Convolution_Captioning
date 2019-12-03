@@ -34,30 +34,38 @@ class coco_loader(Dataset):
 
         with open('word_to_id.p', 'rb') as fp:
             self.dictionary = pickle.load(fp)
+        
+        self.num_captions_per_img = 5
 
     def __len__(self):
         return len(self.ann_ids)
 
     def __getitem__(self, ID):
         
-        #return a coco anotation ID from the given ID
-        ann_list = self.coco.loadAnns(ids=self.ann_ids[ID])
-        
-        # convert coco annotation ID to a caption and imageID
-        caption = [ann['caption'] for ann in ann_list]
-        image_id = [idx['image_id'] for idx in ann_list]
+        sample_image_id = self.img_ids[ID]
 
         # load images from disk
-        img_path = self.coco.loadImgs(image_id)[0]['file_name']
+        img_path = self.coco.loadImgs(sample_image_id)[0]['file_name']
         img = Image.open(os.path.join(self.path, img_path)).convert('RGB')
 
         # image transforms
         if self.transform:
-            img = self.transform(img)
+            img = self.transform(img)  # 1 x 3 x 224 x 224
+        
+        img = img.unsqueeze(4).expand(-1, -1, -1, -1, self.num_captions_per_img) # 1 x 3 x 224 x 224 x 5
 
-        # tokenize caption
-        caption_tknID = caption_to_id(caption, self.dictionary, self.vocab_size, self.max_cap_len)
-        return img, caption, torch.LongTensor(caption_tknID), torch.LongTensor(image_id)
+        ann_ids = self.coco.getAnnIds(sample_image_id)
+        cap_dict = self.coco.loadAnns(ann_ids)
+        caption = [item['caption'] for item in cap_dict]  # list of 5 captions
+
+        caption_tknID = []
+        for i in range(self.num_captions_per_img):
+            caption_tknID[i] = caption_to_id(caption[i], self.dictionary, self.vocab_size, self.max_cap_len)
+
+
+        return img, caption, torch.LongTensor(caption_tknID), sample_image_id
+    
+
 
 
 
