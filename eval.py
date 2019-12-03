@@ -94,7 +94,7 @@ def gen_caption(image, image_model, caption_model, max_cap_len = 15, imgID = Non
             output = ' '.join(caption_tkn[i][1:])
         # either append image ID (dict) or output only captions
         if (imgID is not None):
-            caption_str.append({'image_id': imgID[i, 0].item(), 'caption': output})
+            caption_str.append({'image_id': imgID[i].item(), 'caption': output})
         else:
             caption_str.append(output)
 

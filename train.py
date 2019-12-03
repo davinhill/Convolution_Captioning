@@ -89,7 +89,7 @@ for epoch in range(args.num_epochs):
 
 
     for batchID, (image, caption, caption_tknID, imgID) in enumerate(trainloader):
-        import pdb; pdb.set_trace()
+
         batch_start = datetime.now() 
         optimizer.zero_grad()
         if train_vgg:
@@ -99,7 +99,6 @@ for epoch in range(args.num_epochs):
         #caption_tknID.shape: batch_size x 5 x max_cap_len
 
         batch_size = image.shape[0] # get current batch size
-
         # reshape caption 
         caption_tknID = caption_tknID.reshape(batch_size * args.num_caps_per_img, args.max_cap_len)
 
@@ -119,6 +118,7 @@ for epoch in range(args.num_epochs):
             pred = model_cc(caption_tknID, img_fc)  # generate predicted caption. n x vocab_size x max_cap_len
 
         # reshape predicted and GT captions for loss calculation
+        batch_size = batch_size * args.num_caps_per_img # new batch size after repeating image features per caption
         caption_pred = pred.transpose(1, 2).reshape(batch_size * args.max_cap_len, -1) # n * max_cap_len x vocab_size (probability dist'n over all words)
         caption_target = caption_tknID.reshape(batch_size * args.max_cap_len)  # n * max_cap_len x 1
         word_mask = caption_target.nonzero().reshape(-1) # the word mask filters out "unused words" when the GT caption is shorter than the max caption length.
@@ -128,24 +128,21 @@ for epoch in range(args.num_epochs):
 
         loss.backward()
         optimizer.step()
-        scheduler.step()
 
-        if train_vgg:
-            optimizer_vgg.step()
-            scheduler_vgg.step()
-        import pdb; pdb.set_trace()
-        if batchID % 100 == 0:
+        if batchID % 500 == 0:
             epoch_time = datetime.now() - batch_start
             print("Batch: %d || Loss: %f || Time: %s" % (batchID, loss, str(epoch_time)))
 
     
-    accy = test_accy(valloader, coco_testaccy, model_vgg, model_cc, args.max_cap_len)
+    scheduler.step()
+
+    if train_vgg:
+        optimizer_vgg.step()
+        scheduler_vgg.step()
+
     epoch_time = datetime.now() - epoch_time_start
+    accy = test_accy(valloader, coco_testaccy, model_vgg, model_cc, args.max_cap_len)
     print("========================================")
     print("Epoch: %d || Loss: %f || Time: %s" % (epoch, loss, str(epoch_time)))
-    print(accy['Bleu_1'])
-    print(accy['Bleu_2'])
-    print(accy['Bleu_3'])
-    print(accy['Bleu_4'])
     print("========================================")
 

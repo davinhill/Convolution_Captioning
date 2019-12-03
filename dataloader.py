@@ -110,7 +110,7 @@ class coco_loader_val(Dataset):
 def caption_to_id(caption, dictionary, vocab_size, max_cap_len):
 
     # tokenize caption
-    caption_tkn = nltk.word_tokenize(caption[0])
+    caption_tkn = nltk.word_tokenize(caption)
     caption_tkn = [w.lower() for w in caption_tkn]
 
     # insert start / end tokens
