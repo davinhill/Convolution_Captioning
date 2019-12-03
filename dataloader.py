@@ -155,7 +155,7 @@ def caption_to_id(caption, dictionary, vocab_size, max_cap_len):
 # ================================
 # Load Data Function
 # ================================
-def load_data(path, batch_size, vocab_size, max_cap_len, n_workers=4, max_caps_per_img=5):
+def load_data(path, batch_size, vocab_size, max_cap_len, n_workers=4, num_caps_per_img=5):
 
     data_transforms = {
         'train': transforms.Compose([
@@ -177,7 +177,7 @@ def load_data(path, batch_size, vocab_size, max_cap_len, n_workers=4, max_caps_p
         vocab_size = vocab_size,
         max_cap_len = max_cap_len,
         transform=data_transforms['train'],
-        max_caps_per_img = max_caps_per_img,
+        num_caps_per_img = num_caps_per_img,
         )
     trainloader = DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=n_workers)
 
