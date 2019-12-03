@@ -15,7 +15,7 @@ from datetime import datetime
 
 from models import conv_captioning, vgg_extraction
 from dataloader import load_data
-from eval import test_accy
+from eval import test_accy, id_to_word
 
 # ======================================================
     # Input Parameters
@@ -129,9 +129,17 @@ for epoch in range(args.num_epochs):
         loss.backward()
         optimizer.step()
 
-        if batchID % 500 == 0:
+        if batchID % 100 == 0:
             epoch_time = datetime.now() - batch_start
             print("Batch: %d || Loss: %f || Time: %s" % (batchID, loss, str(epoch_time)))
+            id_conversion_array = np.load('id_to_word.npy')
+            x = id_to_word(caption_target[word_mask], id_conversion_array)
+            y = caption_pred.cpu().detach().numpy()
+            y = np.argmax(caption_pred, axis = 1)
+            y = id_to_word(y, id_conversion_array)
+            print(y)
+            print('------------')
+            print(x)
 
     
     scheduler.step()
