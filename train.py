@@ -129,17 +129,20 @@ for epoch in range(args.num_epochs):
         loss.backward()
         optimizer.step()
 
-        if batchID % 100 == 0:
+        if batchID % 500 == 0:
             epoch_time = datetime.now() - batch_start
             print("Batch: %d || Loss: %f || Time: %s" % (batchID, loss, str(epoch_time)))
+
+            # Print 2 example captions
             id_conversion_array = np.load('id_to_word.npy')
-            x = id_to_word(caption_target[word_mask], id_conversion_array)
-            y = caption_pred.cpu().detach().numpy()
-            y = np.argmax(caption_pred, axis = 1)
+            x = id_to_word(caption_target[:30], id_conversion_array)
+            y = caption_pred[:30].cpu().detach().numpy()
+            y = torch.from_numpy(np.argmax(y, axis = 1).reshape(-1))
             y = id_to_word(y, id_conversion_array)
-            print(y)
+            print('Prediction: ', y)
             print('------------')
-            print(x)
+            print('GT: ', x)
+            print("===============================================")
 
     
     scheduler.step()
