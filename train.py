@@ -15,7 +15,7 @@ from datetime import datetime
 
 from models import conv_captioning, vgg_extraction
 from dataloader import load_data
-from eval import test_accy, id_to_word
+from eval import test_accy, id_to_word, gen_caption
 
 # ======================================================
     # Input Parameters
@@ -133,6 +133,14 @@ for epoch in range(args.num_epochs):
             epoch_time = datetime.now() - batch_start
             print("Batch: %d || Loss: %f || Time: %s" % (batchID, loss, str(epoch_time)))
 
+            z = gen_caption(image, model_vgg, model_cc)
+            print(z)
+            print('-------------')
+            id_conversion_array = np.load('id_to_word.npy')
+            x = id_to_word(caption_target[:30], id_conversion_array)
+            print(x)
+            print('======================')
+            '''
             # Print 2 example captions
             id_conversion_array = np.load('id_to_word.npy')
             x = id_to_word(caption_target[:30], id_conversion_array)
@@ -143,7 +151,7 @@ for epoch in range(args.num_epochs):
             print('------------')
             print('GT: ', x)
             print("===============================================")
-
+            '''
     
     scheduler.step()
 
