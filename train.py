@@ -134,7 +134,7 @@ for epoch in range(args.num_epochs):
             print("Batch: %d || Loss: %f || Time: %s" % (batchID, loss, str(epoch_time)))
 
             z = gen_caption(image, model_vgg, model_cc)
-            print(z)
+            print(z[:2])
             print('-------------')
             id_conversion_array = np.load('id_to_word.npy')
             x = id_to_word(caption_target[:30], id_conversion_array)

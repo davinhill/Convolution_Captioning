@@ -78,7 +78,7 @@ def gen_caption(image, image_model, caption_model, max_cap_len = 15, imgID = Non
     img_conv, img_fc = image_model(image)  
 
     for i in range(max_cap_len-1):
-        import pdb; pdb.set_trace()
+
         # generate model predictions for the next word, based on the previously-"stored" predictions
         pred = caption_model(caption_tknID, img_fc).cpu().detach()  # n x vocab_size x max_cap_len
         pred = np.argmax(pred, axis = 1)    # n x max_cap_len
