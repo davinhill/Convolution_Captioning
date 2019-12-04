@@ -98,9 +98,9 @@ for epoch in range(args.num_epochs):
         #image.shape: batch_size x 3 x 224 x 224
         #caption_tknID.shape: batch_size x 5 x max_cap_len
 
-        batch_size = image.shape[0] # get current batch size
-        # reshape caption 
-        caption_tknID = caption_tknID.reshape(batch_size * args.num_caps_per_img, args.max_cap_len)
+        # reshape caption to account for num captions per image
+        batch_size = image.shape[0] 
+        caption_tknID = caption_tknID.reshape(batch_size * args.num_caps_per_img, args.max_cap_len) #batch_size * 5 x max_cap_len
 
         # run image feature extraction model
         img_conv, img_fc = model_vgg(image) # extract image features
@@ -117,7 +117,11 @@ for epoch in range(args.num_epochs):
         else:
             pred = model_cc(caption_tknID, img_fc)  # generate predicted caption. n x vocab_size x max_cap_len
 
-        # reshape predicted and GT captions for loss calculation
+        # reshape pred / GT such that pred does not include <S>
+        pred = pred[:, :, :-1]  # batch_size x vocab_size x (max_cap_len - 1)
+        caption_tknID[:, 1:] # (batch_size * 5) x (max_cap_len - 1)
+
+        # reshape predicted and GT captions for loss calculation (flatten)
         batch_size = batch_size * args.num_caps_per_img # new batch size after repeating image features per caption
         caption_pred = pred.transpose(1, 2).reshape(batch_size * args.max_cap_len, -1) # n * max_cap_len x vocab_size (probability dist'n over all words)
         caption_target = caption_tknID.reshape(batch_size * args.max_cap_len)  # n * max_cap_len x 1
@@ -144,8 +148,8 @@ for epoch in range(args.num_epochs):
             print(x)
             print('======================')
             
-
-            '''
+            print('TRAINING')
+            print('======================')
             # Print 2 example training captions
             id_conversion_array = np.load('id_to_word.npy')
             x = id_to_word(caption_target[:30], id_conversion_array)
@@ -156,8 +160,8 @@ for epoch in range(args.num_epochs):
             print(y)
             print('GT------------------------')
             print(x)
-            print("===============================================")
-            '''
+            print("++++++++++++++++++++++++++++++++++++++++++++++")
+            print("++++++++++++++++++++++++++++++++++++++++++++++")
     
     scheduler.step()
 
