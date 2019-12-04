@@ -172,8 +172,8 @@ def load_data(path, batch_size, vocab_size, max_cap_len, n_workers=4, num_caps_p
     }
 
     trainset = coco_loader(data_path=os.path.join(
-        path, 'train2017/'), 
-        ann_path=os.path.join(path, 'annotations/captions_train2017.json'),
+        path, 'train2014/'), 
+        ann_path=os.path.join(path, 'annotations/captions_train2014.json'),
         vocab_size = vocab_size,
         max_cap_len = max_cap_len,
         transform=data_transforms['train'],
@@ -182,8 +182,8 @@ def load_data(path, batch_size, vocab_size, max_cap_len, n_workers=4, num_caps_p
     trainloader = DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=n_workers)
 
     valset = coco_loader_val(data_path=os.path.join(
-        path, 'val2017/'), 
-        ann_path=os.path.join(path, 'annotations/captions_val2017.json'),
+        path, 'val2014/'), 
+        ann_path=os.path.join(path, 'annotations/captions_val2014.json'),
         vocab_size = vocab_size,
         max_cap_len = max_cap_len,
         transform=data_transforms['val']
