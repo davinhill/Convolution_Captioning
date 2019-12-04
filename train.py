@@ -144,7 +144,7 @@ for epoch in range(args.num_epochs):
             print(z[:2])
 
             id_conversion_array = np.load('id_to_word.npy')
-            y = caption_pred[:28].cpu().detach().numpy()
+            y = caption_pred[:28, :].cpu().detach().numpy()
             y = torch.from_numpy(np.argmax(y, axis = 1).reshape(-1))
             y = id_to_word(y, id_conversion_array)
             print('TRAIN------------------')
