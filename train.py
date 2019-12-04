@@ -136,7 +136,7 @@ for epoch in range(args.num_epochs):
             '''
             # Print 2 example inference captions
             z = gen_caption(image, model_vgg, model_cc)
-            print(z[:2])
+            print(z)
             print('-------------')
             id_conversion_array = np.load('id_to_word.npy')
             x = id_to_word(caption_target[:30], id_conversion_array)
