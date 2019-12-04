@@ -123,8 +123,8 @@ for epoch in range(args.num_epochs):
 
         # reshape predicted and GT captions for loss calculation (flatten)
         batch_size = batch_size * args.num_caps_per_img # new batch size after repeating image features per caption
-        caption_pred = pred.transpose(1, 2).reshape(batch_size * args.max_cap_len, -1) # n * max_cap_len x vocab_size (probability dist'n over all words)
-        caption_target = caption_tknID.reshape(batch_size * args.max_cap_len)  # n * max_cap_len x 1
+        caption_pred = pred.transpose(1, 2).reshape(batch_size * (args.max_cap_len-1), -1) # n * (max_cap_len-1) x vocab_size (probability dist'n over all words)
+        caption_target = caption_tknID.reshape(batch_size * (args.max_cap_len-1))  # n * (max_cap_len-1) x 1
         word_mask = caption_target.nonzero().reshape(-1) # the word mask filters out "unused words" when the GT caption is shorter than the max caption length.
 
         # calculate Cross-Entropy loss
