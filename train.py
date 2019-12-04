@@ -23,7 +23,7 @@ from eval import test_accy, id_to_word, gen_caption
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('--data_path', type=str, default=os.path.dirname('../coco_data2017/'), help='path where data & annotations are located')
+parser.add_argument('--data_path', type=str, default=os.path.dirname('../coco_data2014/'), help='path where data & annotations are located')
 parser.add_argument('--num_epochs', type=int, default=30)
 parser.add_argument('--vocab_size', type=int, default=9221)
 parser.add_argument('--max_cap_len', type=int, default=15, help = 'maximum caption length')
@@ -50,7 +50,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 # Load Data
 trainloader, valloader = load_data(path = args.data_path, batch_size = args.batch_size, vocab_size = args.vocab_size, max_cap_len=args.max_cap_len, num_caps_per_img = args.num_caps_per_img)
-coco_testaccy = COCO(os.path.join(args.data_path, 'annotations/captions_val2017.json')) # create coco object for test accuracy calculation
+coco_testaccy = COCO(os.path.join(args.data_path, 'annotations/captions_val2014.json')) # create coco object for test accuracy calculation
 
 # Initialize Models
 model_vgg = vgg_extraction(args.img_feat)

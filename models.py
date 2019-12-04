@@ -85,6 +85,7 @@ class conv_captioning(nn.Module):
         # Classification layers
         self.fc1 = nn.utils.weight_norm(nn.Linear(int(input_feat / 2), int(input_feat / 4)))
         self.fc2 = nn.utils.weight_norm(nn.Linear(int(input_feat / 4), vocab_size))
+        self.drop1 = nn.Dropout(p = dropout_p)
 
     def forward(self, caption_tknID, img_fc):
         
@@ -100,14 +101,12 @@ class conv_captioning(nn.Module):
 
         # convolution layers
         x = self.conv_n(input_embed) # n x 512 x max_cap_len
-        #x = F.dropout(x, p = self.dropout_p)
 
-        # note: I'm following the source code, however I'm not sure why there isn't a relu between the two FC layers? Also, why the extra 2 dropout layers?
         # classifier layers
         x = x.transpose(1,2)  # n x max_cap_len x 512
         x = self.fc1(x) # n x max_cap_len x 256
-        #x = F.dropout(x, p = self.dropout_p)
-        x = F.relu(x)
+        x = self.drop1(x)
+        #x = F.relu(x)
         
         x = self.fc2(x) # n x max_cap_len x vocab_size
         x = x.transpose(1,2) # n x vocab_size x max_cap_len
