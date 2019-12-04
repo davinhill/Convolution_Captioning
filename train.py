@@ -129,10 +129,12 @@ for epoch in range(args.num_epochs):
         loss.backward()
         optimizer.step()
 
-        if batchID % 500 == 0:
+        if batchID % 100 == 0:
             epoch_time = datetime.now() - batch_start
             print("Batch: %d || Loss: %f || Time: %s" % (batchID, loss, str(epoch_time)))
 
+            '''
+            # Print 2 example inference captions
             z = gen_caption(image, model_vgg, model_cc)
             print(z[:2])
             print('-------------')
@@ -141,7 +143,9 @@ for epoch in range(args.num_epochs):
             print(x)
             print('======================')
             '''
-            # Print 2 example captions
+
+            
+            # Print 2 example training captions
             id_conversion_array = np.load('id_to_word.npy')
             x = id_to_word(caption_target[:30], id_conversion_array)
             y = caption_pred[:30].cpu().detach().numpy()
@@ -151,7 +155,7 @@ for epoch in range(args.num_epochs):
             print('------------')
             print('GT: ', x)
             print("===============================================")
-            '''
+            
     
     scheduler.step()
 
