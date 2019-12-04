@@ -142,17 +142,15 @@ for epoch in range(args.num_epochs):
             z = gen_caption(image, model_vgg, model_cc)
             print('test prediction------------------')
             print(z[:2])
-            id_conversion_array = np.load('id_to_word.npy')
-            x = id_to_word(caption_target[:30], id_conversion_array)
 
             id_conversion_array = np.load('id_to_word.npy')
-            x = id_to_word(caption_target[:28], id_conversion_array)
             y = caption_pred[:28].cpu().detach().numpy()
             y = torch.from_numpy(np.argmax(y, axis = 1).reshape(-1))
             y = id_to_word(y, id_conversion_array)
             print('training prediction------------------')
             print(y)
             print('GT------------------------')
+            x = id_to_word(caption_target[:28], id_conversion_array)
             print(x)
             print("=============================================")
     
