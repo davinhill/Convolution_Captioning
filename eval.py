@@ -84,7 +84,7 @@ def gen_caption(image, image_model, caption_model, max_cap_len = 15, imgID = Non
         pred = np.argmax(pred, axis = 1)    # n x max_cap_len
 
         # update "stored" predictions
-        caption_tknID[:, i+1] = pred[:, i+1]
+        caption_tknID[:, i+1] = pred[:, i]
 
     
     # convert IDs to words
