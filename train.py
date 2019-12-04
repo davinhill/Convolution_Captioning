@@ -138,19 +138,20 @@ for epoch in range(args.num_epochs):
             print("Batch: %d || Loss: %f || Time: %s" % (batchID, loss, str(epoch_time)))
 
             
-            # Print 2 example inference captions
+            # Print an example caption
             z = gen_caption(image, model_vgg, model_cc)
             print('TEST------------------')
-            print(z[:2])
+            print(z[0])
 
             id_conversion_array = np.load('id_to_word.npy')
-            y = caption_pred[:28, :].cpu().detach().numpy()
+            y = caption_pred[:14, :].cpu().detach().numpy()
             y = torch.from_numpy(np.argmax(y, axis = 1).reshape(-1))
             y = id_to_word(y, id_conversion_array)
             print('TRAIN------------------')
             print(y)
+
+            x = id_to_word(caption_target[:14], id_conversion_array)
             print('GT------------------------')
-            x = id_to_word(caption_target[:28], id_conversion_array)
             print(x)
             print("=============================================")
     
