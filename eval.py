@@ -76,7 +76,7 @@ def gen_caption(image, image_model, caption_model, max_cap_len = 15, imgID = Non
 
     # get image features
     img_conv, img_fc = image_model(image)  
-
+    import pdb; pdb.set_trace()
     for i in range(max_cap_len-1):
 
         # generate model predictions for the next word, based on the previously-"stored" predictions
@@ -121,8 +121,6 @@ def test_accy(dataloader, coco_object, image_model, caption_model, max_cap_len):
     print(pred[0])
     print(pred[1])
     return eval_accy(pred, coco_object)
-
-
 
 
 
