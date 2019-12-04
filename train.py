@@ -133,29 +133,31 @@ for epoch in range(args.num_epochs):
             epoch_time = datetime.now() - batch_start
             print("Batch: %d || Loss: %f || Time: %s" % (batchID, loss, str(epoch_time)))
 
-            '''
+            
             # Print 2 example inference captions
             z = gen_caption(image, model_vgg, model_cc)
+            print('Prediction------------------')
             print(z)
-            print('-------------')
             id_conversion_array = np.load('id_to_word.npy')
             x = id_to_word(caption_target[:30], id_conversion_array)
+            print('GT------------------------')
             print(x)
             print('======================')
-            '''
-
             
+
+            '''
             # Print 2 example training captions
             id_conversion_array = np.load('id_to_word.npy')
             x = id_to_word(caption_target[:30], id_conversion_array)
             y = caption_pred[:30].cpu().detach().numpy()
             y = torch.from_numpy(np.argmax(y, axis = 1).reshape(-1))
             y = id_to_word(y, id_conversion_array)
-            print('Prediction: ', y)
-            print('------------')
-            print('GT: ', x)
+            print('Prediction------------------')
+            print(y)
+            print('GT------------------------')
+            print(x)
             print("===============================================")
-            
+            '''
     
     scheduler.step()
 

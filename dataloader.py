@@ -11,7 +11,9 @@ from pycocotools.coco import COCO
 from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 import pickle
-import re
+import nltk
+import numpy as np
+nltk.download('punkt')
 
 # I still need to fix the issue of caption length
 # Also, need to figure out how to limit vocabulary size
@@ -110,8 +112,8 @@ class coco_loader_val(Dataset):
 def caption_to_id(caption, dictionary, vocab_size, max_cap_len):
 
     # tokenize caption
-    caption_tkn = re.split('(\W)', caption)
-    caption_tkn = [value.lower() for value in caption_tkn if (value != '' and value != ' ')]
+    caption_tkn = nltk.word_tokenize(caption)
+    caption_tkn = [w.lower() for w in caption_tkn]
 
     # insert start / end tokens
     caption_tkn.insert(0, '<S>')
