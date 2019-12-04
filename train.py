@@ -119,7 +119,7 @@ for epoch in range(args.num_epochs):
 
         # reshape pred / GT such that pred does not include <S>
         pred = pred[:, :, :-1]  # batch_size x vocab_size x (max_cap_len - 1)
-        caption_tknID[:, 1:] # (batch_size * 5) x (max_cap_len - 1)
+        caption_tknID = caption_tknID[:, 1:] # (batch_size * 5) x (max_cap_len - 1)
 
         # reshape predicted and GT captions for loss calculation (flatten)
         batch_size = batch_size * args.num_caps_per_img # new batch size after repeating image features per caption
@@ -133,35 +133,28 @@ for epoch in range(args.num_epochs):
         loss.backward()
         optimizer.step()
 
-        if batchID % 100 == 0:
+        if batchID % 500 == 0:
             epoch_time = datetime.now() - batch_start
             print("Batch: %d || Loss: %f || Time: %s" % (batchID, loss, str(epoch_time)))
 
             
             # Print 2 example inference captions
             z = gen_caption(image, model_vgg, model_cc)
-            print('Prediction------------------')
-            print(z)
+            print('test prediction------------------')
+            print(z[:2])
             id_conversion_array = np.load('id_to_word.npy')
             x = id_to_word(caption_target[:30], id_conversion_array)
-            print('GT------------------------')
-            print(x)
-            print('======================')
-            
-            print('TRAINING')
-            print('======================')
-            # Print 2 example training captions
+
             id_conversion_array = np.load('id_to_word.npy')
-            x = id_to_word(caption_target[:30], id_conversion_array)
-            y = caption_pred[:30].cpu().detach().numpy()
+            x = id_to_word(caption_target[:28], id_conversion_array)
+            y = caption_pred[:28].cpu().detach().numpy()
             y = torch.from_numpy(np.argmax(y, axis = 1).reshape(-1))
             y = id_to_word(y, id_conversion_array)
-            print('Prediction------------------')
+            print('training prediction------------------')
             print(y)
             print('GT------------------------')
             print(x)
-            print("++++++++++++++++++++++++++++++++++++++++++++++")
-            print("++++++++++++++++++++++++++++++++++++++++++++++")
+            print("=============================================")
     
     scheduler.step()
 
