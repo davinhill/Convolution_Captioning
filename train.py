@@ -133,21 +133,21 @@ for epoch in range(args.num_epochs):
         loss.backward()
         optimizer.step()
 
-        if batchID % 500 == 0:
+        if batchID % 1000 == 0:
             epoch_time = datetime.now() - batch_start
             print("Batch: %d || Loss: %f || Time: %s" % (batchID, loss, str(epoch_time)))
 
             
             # Print 2 example inference captions
             z = gen_caption(image, model_vgg, model_cc)
-            print('test prediction------------------')
+            print('TEST------------------')
             print(z[:2])
 
             id_conversion_array = np.load('id_to_word.npy')
             y = caption_pred[:28].cpu().detach().numpy()
             y = torch.from_numpy(np.argmax(y, axis = 1).reshape(-1))
             y = id_to_word(y, id_conversion_array)
-            print('training prediction------------------')
+            print('TRAIN------------------')
             print(y)
             print('GT------------------------')
             x = id_to_word(caption_target[:28], id_conversion_array)
