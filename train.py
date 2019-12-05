@@ -39,9 +39,9 @@ parser.add_argument('--dropout_p', type=float, default=0.1, help = 'dropout prob
 parser.add_argument('--train_vgg', type=int, default=8, help = 'the number of epochs after which the image extractor network will start training')
 parser.add_argument('--attention', type=bool, default=False, help = 'use attention?')
 parser.add_argument('--num_caps_per_img', type=int, default=5, help = 'number of captions per image in training set (should be 5 in coco)')
-parser.add_argument('--model_save_path', type=str, default=os.path.dirname('/saved_models/'), help = 'where models are saved')
+parser.add_argument('--model_save_path', type=str, default=os.path.dirname('./saved_models/'), help = 'where models are saved')
 parser.add_argument('--load_model', type=str, default=None, help = 'provide the path of a model if you are loading a checkpoint')
-parser.add_argument('--accy_file', type=str, default='/saved_models/model_accuracy.json', help='provide the accuracy results file if you are loading a checkpoint')
+parser.add_argument('--accy_file', type=str, default='./saved_models/model_accuracy.json', help='provide the accuracy results file if you are loading a checkpoint')
 
 args = parser.parse_args()
 
