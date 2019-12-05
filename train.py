@@ -9,9 +9,9 @@ from torchvision import models
 import torch.nn as nn
 import numpy as np
 from pycocotools.coco import COCO
-
 import argparse
 from datetime import datetime
+import json
 
 from models import conv_captioning, vgg_extraction
 from dataloader import load_data
@@ -40,6 +40,8 @@ parser.add_argument('--train_vgg', type=int, default=8, help = 'the number of ep
 parser.add_argument('--attention', type=bool, default=False, help = 'use attention?')
 parser.add_argument('--num_caps_per_img', type=int, default=5, help = 'number of captions per image in training set (should be 5 in coco)')
 parser.add_argument('--model_save_path', type=str, default=os.path.dirname('/saved_models/'), help = 'where models are saved')
+parser.add_argument('--load_model', type=str, default=None, help = 'provide the path of a model if you are loading a checkpoint')
+parser.add_argument('--accy_file', type=str, default='/saved_models/model_accuracy.json', help='provide the accuracy results file if you are loading a checkpoint')
 
 args = parser.parse_args()
 
@@ -54,33 +56,53 @@ trainloader, valloader = load_data(path = args.data_path, batch_size = args.batc
 coco_testaccy = COCO(os.path.join(args.data_path, 'annotations/captions_val2014.json')) # create coco object for test accuracy calculation
 
 # Initialize Models
-model_vgg = vgg_extraction(args.img_feat)
-model_vgg.to(device)
 model_cc = conv_captioning(args.vocab_size, args.kernel_size, args.num_layers, args.dropout_p, args.word_feat, args.img_feat + args.word_feat)
 model_cc.to(device)
+model_vgg = vgg_extraction(args.img_feat)
+model_vgg.to(device)
 
 # Initialize optimizer
 optimizer = torch.optim.RMSprop(model_cc.parameters(), lr = args.initial_lr)
 scheduler = torch.optim.lr_scheduler.StepLR(optimizer, gamma = args.scheduler_gamma, step_size = args.scheduler_stepsize )
+optimizer_vgg = torch.optim.RMSprop(model_vgg.parameters(), lr = args.initial_lr)
+scheduler_vgg = torch.optim.lr_scheduler.StepLR(optimizer_vgg, gamma = args.scheduler_gamma, step_size = args.scheduler_stepsize )
 
 # Criterion
 criterion = nn.CrossEntropyLoss()
 
-train_vgg = False  # initialize flag so that the vgg network is not trained at start of training
+test_scores = [] # initialize saved scores
+initial_epoch = 0
+
+# ======================================================
+    # Load Model
+# ======================================================
+
+if args.load_model is not None:
+    checkpoint = torch.load(args.load_model)
+    init_epoch = checkpoint['epoch'] + 1
+    model_cc.load_state_dict(checkpoint['state_dict_cap'])
+    optimizer.load_state_dict(checkpoint['optimizer_cap'])
+    scheduler.load_state_dict(checkpoint['scheduler_cap'])
+
+    model_vgg.load_state_dict(checkpoint['state_dict_img'])
+    optimizer_vgg.load_state_dict(checkpoint['optimizer_img'])
+    scheduler_vgg.load_state_dict(checkpoint['scheduler_img'])
+
+    test_scores = json.load(open('/saved_models/model_accuracy.json', 'r'))
 
 # ======================================================
     # Train
 # ======================================================
 
-for epoch in range(args.num_epochs):
+for epoch in range(init_epoch, args.num_epochs):
 
     epoch_time_start = datetime.now()
 
     # start training vgg after specified number of epochs
-    if epoch == args.train_vgg:
+    if epoch >= args.train_vgg:
         train_vgg = True
-        optimizer_vgg = torch.optim.RMSprop(model_vgg.parameters(), lr = args.initial_lr)
-        scheduler_vgg = torch.optim.lr_scheduler.StepLR(optimizer_vgg, gamma = args.scheduler_gamma, step_size = args.scheduler_stepsize )
+    else:
+        train_vgg = False
 
     model_cc.train()
     if train_vgg:
@@ -167,3 +189,24 @@ for epoch in range(args.num_epochs):
     print("Epoch: %d || Loss: %f || Time: %s" % (epoch, loss, str(epoch_time)))
     print("========================================")
     accy = test_accy(valloader, coco_testaccy, model_vgg, model_cc, args.max_cap_len) # calc test accuracy
+    test_accy.append(accy) 
+
+
+    # Save Checkpoint
+    checkpoint = {'epoch': epoch,
+                  'state_dict_cap': model_cc.state_dict(),
+                  'optimizer_cap': optimizer.state_dict(),
+                  'scheduler_cap': scheduler.state_dict(),
+
+                  'state_dict_img': model_vgg.state_dict(),
+                  'optimizer_img': optimizer_vgg.state_dict(),
+                  'scheduler_img': scheduler_vgg.state_dict()
+                  }
+
+    # Write Checkpoint to disk
+    torch.save(checkpoint, os.path.join(args.model_save_path, 'checkpoint.pt'))
+    json.dump(test_accy, open(os.path.join(args.model_save_path, 'model_accuracy.json'), 'w'))
+
+    # Save highest-scoring model
+    if accy['Bleu_1'] > max([value['Bleu_1'] for value in test_accy]):
+        torch.save(checkpoint, os.path.join(args.model_save_path, 'best_model.pt'))
