@@ -39,6 +39,7 @@ parser.add_argument('--dropout_p', type=float, default=0.1, help = 'dropout prob
 parser.add_argument('--train_vgg', type=int, default=8, help = 'the number of epochs after which the image extractor network will start training')
 parser.add_argument('--attention', type=bool, default=False, help = 'use attention?')
 parser.add_argument('--num_caps_per_img', type=int, default=5, help = 'number of captions per image in training set (should be 5 in coco)')
+parser.add_argument('--model_save_path', type=str, default=os.path.dirname('/saved_models/'), help = 'where models are saved')
 
 args = parser.parse_args()
 
@@ -132,6 +133,8 @@ for epoch in range(args.num_epochs):
 
         loss.backward()
         optimizer.step()
+        if train_vgg:
+            optimizer_vgg.step()
 
         if batchID % 1000 == 0:
             epoch_time = datetime.now() - batch_start
@@ -156,14 +159,11 @@ for epoch in range(args.num_epochs):
             print("=============================================")
     
     scheduler.step()
-
     if train_vgg:
-        optimizer_vgg.step()
         scheduler_vgg.step()
 
     epoch_time = datetime.now() - epoch_time_start
-    accy = test_accy(valloader, coco_testaccy, model_vgg, model_cc, args.max_cap_len)
     print("========================================")
     print("Epoch: %d || Loss: %f || Time: %s" % (epoch, loss, str(epoch_time)))
     print("========================================")
-
+    accy = test_accy(valloader, coco_testaccy, model_vgg, model_cc, args.max_cap_len) # calc test accuracy
