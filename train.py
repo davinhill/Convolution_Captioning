@@ -189,7 +189,7 @@ for epoch in range(init_epoch, args.num_epochs):
     print("Epoch: %d || Loss: %f || Time: %s" % (epoch, loss, str(epoch_time)))
     print("========================================")
     accy = test_accy(valloader, coco_testaccy, model_vgg, model_cc, args.max_cap_len) # calc test accuracy
-    test_accy.append(accy) 
+    test_scores.append(accy) 
 
 
     # Save Checkpoint
@@ -205,8 +205,8 @@ for epoch in range(init_epoch, args.num_epochs):
 
     # Write Checkpoint to disk
     torch.save(checkpoint, os.path.join(args.model_save_path, 'checkpoint.pt'))
-    json.dump(test_accy, open(os.path.join(args.model_save_path, 'model_accuracy.json'), 'w'))
+    json.dump(test_scores, open(os.path.join(args.model_save_path, 'model_accuracy.json'), 'w'))
 
     # Save highest-scoring model
-    if accy['Bleu_1'] > max([value['Bleu_1'] for value in test_accy]):
+    if accy['Bleu_1'] > max([value['Bleu_1'] for value in test_scores]):
         torch.save(checkpoint, os.path.join(args.model_save_path, 'best_model.pt'))
