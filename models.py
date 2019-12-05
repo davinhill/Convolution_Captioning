@@ -36,7 +36,7 @@ class ConvBlock(nn.Module):
         self.kernel_size = kernel_size
         self.downsample = nn.Linear(input_feat, int(output_feat/2))
 
-    def forward(self, x, **kwargs):
+    def forward(self, x):
         identity = x   # skip connection
         x = self.conv(x) 
         x = self.dropout(x)
@@ -68,7 +68,7 @@ class AttnBlock(nn.Module):
         self.attn_fc1 = nn.Linear(word_feat, attn_channels)
         self.attn_fc2 = nn.Linear(attn_channels, word_feat)
 
-    def forward(self, x, word_embed, img_conv):
+    def forward(self, x, word_embed, img_conv, prev_attn):
         
         identity = x   # skip connection
         x = self.conv(x) 
@@ -84,14 +84,14 @@ class AttnBlock(nn.Module):
         x = self.attn_fc1(x.transpose(1, 2)) + word_embed # n x max_cap_len x 512
 
         # flatten each attn channel
+        rs = img_conv.shape()
         attn_feat = img_conv.flatten(2) # n x 512 x 49
 
         # Calc softmax on each attn channel
         attn_score = torch.matmul(x, attn_feat) # n x max_cap_len x 49
-        rs = attn_score.shape()
         attn_score = attn_score.flatten(end_dim = 1) # (n * max_cap_len) x 49
-        attn_score = F.softmax(attn_score, dim = 1)
-        attn_score = attn_score.reshape(rs) # n x max_cap_len x 49
+        attn_score = F.softmax(attn_score)
+        attn_score = attn_score.reshape(rs) # n x max_cap_len x 7 x 7
         x = torch.matmul(attn_score, attn_feat.transpose(1, 2)) # n x max_cap_len x 512
 
         # up/downsample x to revert it back to the convolution layer output dimensions
@@ -108,7 +108,7 @@ class AttnBlock(nn.Module):
             identity = self.downsample(identity)
             identity = identity.transpose(1, 2)
 
-        return x + identity, attn_score 
+        return x + identity, word_embed, img_conv, attn_score 
 
 
 
@@ -116,7 +116,7 @@ class AttnBlock(nn.Module):
     # Convolution Captioning Model
 # ======================================================
 class conv_captioning(nn.Module):
-    def __init__(self, vocab_size, kernel_size, num_layers, dropout_p, word_feat, input_feat, attn_channels, attn):
+    def __init__(self, vocab_size, kernel_size, num_layers, dropout_p, word_feat, input_feat, attn):
         super(conv_captioning, self).__init__()
 
         self.attn = attn
@@ -127,11 +127,11 @@ class conv_captioning(nn.Module):
         # Convolution / Attention layers
         conv_layers = []
         if self.attn:
-            for i in range(num_layers-1):  # define output channels for convolution operation. Note: Subsequent GLU downsamples features by 1/2
+            for i in range(num_layers):  # define output channels for convolution operation. Note: Subsequent GLU downsamples features by 1/2
                 if i == 0:
-                    conv_layers.append(AttnBlock(input_feat, input_feat, kernel_size, dropout_p, word_feat, attn_channels))
+                    conv_layers.append(AttnBlock(input_feat, input_feat, kernel_size, dropout_p, word_feat))
                 else:
-                    conv_layers.append(AttnBlock(int(input_feat/2), input_feat, kernel_size, dropout_p, word_feat, attn_channels))
+                    conv_layers.append(AttnBlock(int(input_feat/2), input_feat, kernel_size, dropout_p, word_feat))
 
         else:
             for i in range(num_layers-1):  # define output channels for convolution operation. Note: Subsequent GLU downsamples features by 1/2
@@ -159,10 +159,12 @@ class conv_captioning(nn.Module):
         input_embed = torch.cat((word_embed, img_embed), 2).transpose(1, 2) # n x 1024 x (max_cap_len)
 
         # convolution/attention layers
+        attn_score = None
         if self.attn:
-            x, attn_score = self.conv_n(input_embed, word_embed, img_conv) 
+            import pdb; pdb.set_trace()
+            x, _, _, attn_score = self.conv_n(input_embed, word_embed, img_conv, attn_score) 
         else:
-            attn_score = None
+            import pdb; pdb.set_trace()
             x = self.conv_n(input_embed)  # n x 512 x max_cap_len
 
         # classifier layers
