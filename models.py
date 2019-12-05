@@ -55,7 +55,7 @@ class ConvBlock(nn.Module):
     # Attention Model
 # ======================================================
 class AttnBlock(nn.Module):
-    def __init__(self, input_feat, output_feat, kernel_size, dropout_p, word_feat, attn_channels):
+    def __init__(self, input_feat, output_feat, kernel_size, dropout_p, word_feat):
         super(AttnBlock, self).__init__()
 
         self.conv = nn.utils.weight_norm(nn.Conv1d(in_channels = input_feat, out_channels = output_feat, kernel_size = kernel_size, padding = kernel_size - 1, stride = 1))
@@ -64,18 +64,19 @@ class AttnBlock(nn.Module):
         self.downsample = nn.Linear(input_feat, int(output_feat/2))
 
         # Attention Layers
+        attn_channels = 512 # number of channels in vgg convolution layer output, for use in attention
         self.attn_fc1 = nn.Linear(word_feat, attn_channels)
         self.attn_fc2 = nn.Linear(attn_channels, word_feat)
 
     def forward(self, x, word_embed, img_conv):
-
+        
         identity = x   # skip connection
         x = self.conv(x) 
         x = self.dropout(x)
         x = F.glu(x, 1)  # reduces feature dimenion by 1/2. 
         x = x[:,:,:-(self.kernel_size-1)]  # truncate by kernel_size - 1
         # n x 512 x max_cap_len
-
+        import pdb; pdb.set_trace()
         # Attention ################## 
         identity_attn = x # n x 512 x max_cap_len
 
@@ -168,7 +169,7 @@ class conv_captioning(nn.Module):
         x = x.transpose(1,2)  # n x max_cap_len x 512
         x = self.fc1(x) # n x max_cap_len x 256
         x = self.drop1(x)
-        #x = F.relu(x)
+        x = F.relu(x)
         
         x = self.fc2(x) # n x max_cap_len x vocab_size
         x = x.transpose(1,2) # n x vocab_size x max_cap_len

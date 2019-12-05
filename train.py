@@ -56,7 +56,7 @@ trainloader, valloader = load_data(path = args.data_path, batch_size = args.batc
 coco_testaccy = COCO(os.path.join(args.data_path, 'annotations/captions_val2014.json')) # create coco object for test accuracy calculation
 
 # Initialize Models
-model_cc = conv_captioning(args.vocab_size, args.kernel_size, args.num_layers, args.dropout_p, args.word_feat, args.img_feat + args.word_feat)
+model_cc = conv_captioning(args.vocab_size, args.kernel_size, args.num_layers, args.dropout_p, args.word_feat, args.img_feat + args.word_feat, args.attention)
 model_cc.to(device)
 model_vgg = vgg_extraction(args.img_feat)
 model_vgg.to(device)
@@ -131,14 +131,13 @@ for epoch in range(init_epoch, args.num_epochs):
 
         # repeat image features for the number of captions (5)
         img_fc = img_fc.unsqueeze(1).expand(-1, args.num_caps_per_img, -1) # batch_size x 5 x 512
-        img_fc = img_fc.reshape(batch_size * args.num_caps_per_img, -1)
+        img_fc = img_fc.reshape(batch_size * args.num_caps_per_img, -1) # (batch_size * 5) x 512
         img_conv = img_conv.unsqueeze(1).expand(-1, args.num_caps_per_img, -1, -1, -1)
         img_conv = img_conv.reshape(batch_size * args.num_caps_per_img, 512, 7, 7)
 
-        if args.attention:
-            placeholder = 0
-        else:
-            pred = model_cc(caption_tknID, img_fc)  # generate predicted caption. n x vocab_size x max_cap_len
+        pred, attn_score = model_cc(caption_tknID, img_fc, img_conv)  # generate predicted caption. 
+        # pred: n x vocab_size x max_cap_len
+        # attn_score: n x max_cap_len x 49
 
         # reshape pred / GT such that pred does not include <S>
         pred = pred[:, :, :-1]  # batch_size x vocab_size x (max_cap_len - 1)
@@ -149,9 +148,13 @@ for epoch in range(init_epoch, args.num_epochs):
         caption_pred = pred.transpose(1, 2).reshape(batch_size * (args.max_cap_len-1), -1) # n * (max_cap_len-1) x vocab_size (probability dist'n over all words)
         caption_target = caption_tknID.reshape(batch_size * (args.max_cap_len-1))  # n * (max_cap_len-1) x 1
         word_mask = caption_target.nonzero().reshape(-1) # the word mask filters out "unused words" when the GT caption is shorter than the max caption length.
-
+        import pdb; pdb.set_trace()
         # calculate Cross-Entropy loss
-        loss = criterion(caption_pred[word_mask, :], caption_target[word_mask])   
+        if args.attention:
+            # regular loss + MSE of Attention
+            loss = criterion(caption_pred[word_mask, :], caption_target[word_mask]) + 1 
+        else:
+            loss = criterion(caption_pred[word_mask, :], caption_target[word_mask])   
 
         loss.backward()
         optimizer.step()
