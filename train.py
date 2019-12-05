@@ -71,7 +71,7 @@ scheduler_vgg = torch.optim.lr_scheduler.StepLR(optimizer_vgg, gamma = args.sche
 criterion = nn.CrossEntropyLoss()
 
 test_scores = [] # initialize saved scores
-initial_epoch = 0
+init_epoch = 0
 
 # ======================================================
     # Load Model
