@@ -42,6 +42,7 @@ parser.add_argument('--num_caps_per_img', type=int, default=5, help = 'number of
 parser.add_argument('--model_save_path', type=str, default=os.path.dirname('./saved_models/'), help = 'where models are saved')
 parser.add_argument('--load_model', type=str, default=None, help = 'provide the path of a model if you are loading a checkpoint')
 parser.add_argument('--accy_file', type=str, default='./saved_models/model_accuracy.json', help='provide the accuracy results file if you are loading a checkpoint')
+parser.add_argument('--temperature', type=float, default=1, help='temperature softmax')
 
 args = parser.parse_args()
 
@@ -150,11 +151,7 @@ for epoch in range(init_epoch, args.num_epochs):
         word_mask = caption_target.nonzero().reshape(-1) # the word mask filters out "unused words" when the GT caption is shorter than the max caption length.
 
         # calculate Cross-Entropy loss
-        if args.attention:
-            # regular loss + MSE of Attention
-            loss = criterion(caption_pred[word_mask, :], caption_target[word_mask])  
-        else:
-            loss = criterion(caption_pred[word_mask, :], caption_target[word_mask])   
+        loss = criterion(caption_pred[word_mask, :]/args.temperature, caption_target[word_mask]/args.temperature)   
 
         loss.backward()
         optimizer.step()
