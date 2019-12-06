@@ -28,18 +28,31 @@ class vgg_extraction(nn.Module):
         
         
 class ConvBlock(nn.Module):
-    def __init__(self, input_feat, output_feat, kernel_size, dropout_p):
+    def __init__(self, input_feat, output_feat, kernel_size, dropout_p, is_bidirectional):
         super(ConvBlock, self).__init__()       
-
-        self.conv = nn.utils.weight_norm(nn.Conv1d(in_channels = input_feat, out_channels = output_feat, kernel_size = kernel_size, padding = kernel_size - 1, stride = 1))
+        if is_bidirectional:
+            self.conv = nn.utils.weight_norm(nn.Conv1d(in_channels = input_feat, out_channels = output_feat/2, kernel_size = kernel_size, padding = kernel_size - 1, stride = 1))
+        else:
+            self.conv = nn.utils.weight_norm(nn.Conv1d(in_channels = input_feat, out_channels = output_feat, kernel_size = kernel_size, padding = kernel_size - 1, stride = 1))
         self.dropout = nn.Dropout(p = dropout_p)
         self.kernel_size = kernel_size
         self.downsample = nn.Linear(input_feat, int(output_feat/2))
+        self.is_bi = is_bidirectional
 
     def forward(self, x):
         identity = x   # skip connection
-        x = self.conv(x) 
+        x = self.conv(x)
+        
+        #Bidirectional implementation
+        if self.is_bi:
+            x1 = identity
+            x1 = torch.flip(x1, [2])
+            x1 = self.conv(x1)
+            x1 = torch.flip(x1, [2])
+            x = x + x1
+            
         x = self.dropout(x)
+        
         x = F.glu(x, 1)  # reduces feature dimenion by 1/2. 
         x = x[:,:,:-(self.kernel_size-1)]  # truncate by kernel_size - 1
 
@@ -55,10 +68,12 @@ class ConvBlock(nn.Module):
     # Attention Model
 # ======================================================
 class AttnBlock(nn.Module):
-    def __init__(self, input_feat, output_feat, kernel_size, dropout_p, word_feat):
+    def __init__(self, input_feat, output_feat, kernel_size, dropout_p, word_feat, is_bidirectional):
         super(AttnBlock, self).__init__()
-
-        self.conv = nn.utils.weight_norm(nn.Conv1d(in_channels = input_feat, out_channels = output_feat, kernel_size = kernel_size, padding = kernel_size - 1, stride = 1))
+        if is_bidirectional:
+            self.conv = nn.utils.weight_norm(nn.Conv1d(in_channels = input_feat, out_channels = output_feat/2, kernel_size = kernel_size, padding = kernel_size - 1, stride = 1))
+        else:
+            self.conv = nn.utils.weight_norm(nn.Conv1d(in_channels = input_feat, out_channels = output_feat, kernel_size = kernel_size, padding = kernel_size - 1, stride = 1))
         self.dropout = nn.Dropout(p = dropout_p)
         self.kernel_size = kernel_size
         self.downsample = nn.Linear(input_feat, int(output_feat/2))
@@ -67,13 +82,23 @@ class AttnBlock(nn.Module):
         attn_channels = 512 # number of channels in vgg convolution layer output, for use in attention
         self.attn_fc1 = nn.Linear(word_feat, attn_channels)
         self.attn_fc2 = nn.Linear(attn_channels, word_feat)
+        self.is_bi = is_bidirectional
 
     def forward(self, list_input):
         
         x, word_embed, img_conv, prev_attn = list_input[0], list_input[1], list_input[2], list_input[3]
 
         identity = x   # skip connection
-        x = self.conv(x) 
+        x = self.conv(x)
+        
+        #Bidirectional implementation
+        if self.is_bi:
+            x1 = identity
+            x1 = torch.flip(x1, [2])
+            x1 = self.conv(x1)
+            x1 = torch.flip(x1, [2])
+            x = x + x1
+        
         x = self.dropout(x)
         x = F.glu(x, 1)  # reduces feature dimenion by 1/2. 
         x = x[:,:,:-(self.kernel_size-1)]  # truncate by kernel_size - 1
@@ -120,9 +145,9 @@ class AttnBlock(nn.Module):
     # Convolution Captioning Model
 # ======================================================
 class conv_captioning(nn.Module):
-    def __init__(self, vocab_size, kernel_size, num_layers, dropout_p, word_feat, input_feat, attn):
+    def __init__(self, vocab_size, kernel_size, num_layers, dropout_p, word_feat, input_feat, attn, is_bidirectional = False):
         super(conv_captioning, self).__init__()
-
+        
         self.attn = attn
         # Embedding Layers
         self.word_embedding0 = nn.Embedding(vocab_size, word_feat)
@@ -133,22 +158,23 @@ class conv_captioning(nn.Module):
         if self.attn:
             for i in range(num_layers):  # define output channels for convolution operation. Note: Subsequent GLU downsamples features by 1/2
                 if i == 0:
-                    conv_layers.append(AttnBlock(input_feat, input_feat, kernel_size, dropout_p, word_feat))
+                    conv_layers.append(AttnBlock(input_feat, input_feat, kernel_size, dropout_p, word_feat, is_bidirectional))
                 else:
-                    conv_layers.append(AttnBlock(int(input_feat/2), input_feat, kernel_size, dropout_p, word_feat))
+                    conv_layers.append(AttnBlock(int(input_feat/2), input_feat, kernel_size, dropout_p, word_feat, is_bidirectional))
 
         else:
             for i in range(num_layers-1):  # define output channels for convolution operation. Note: Subsequent GLU downsamples features by 1/2
                 if i == 0:
-                    conv_layers.append(ConvBlock(input_feat, input_feat, kernel_size, dropout_p))
+                    conv_layers.append(ConvBlock(input_feat, input_feat, kernel_size, dropout_p, is_bidirectional))
                 else:
-                    conv_layers.append(ConvBlock(int(input_feat/2), input_feat, kernel_size, dropout_p))
+                    conv_layers.append(ConvBlock(int(input_feat/2), input_feat, kernel_size, dropout_p, is_bidirectional))
         self.conv_n = nn.Sequential(*conv_layers)
 
         # Classification layers
         self.fc1 = nn.utils.weight_norm(nn.Linear(int(input_feat / 2), int(input_feat / 4)))
         self.fc2 = nn.utils.weight_norm(nn.Linear(int(input_feat / 4), vocab_size))
         self.drop1 = nn.Dropout(p = dropout_p)
+        
 
     def forward(self, caption_tknID, img_fc, img_conv):
         
@@ -161,6 +187,7 @@ class conv_captioning(nn.Module):
         # Reshape image embedding & concatenate with word embedding
         img_embed = img_fc.unsqueeze(1).expand(-1, word_embed.shape[1], -1)
         input_embed = torch.cat((word_embed, img_embed), 2).transpose(1, 2) # n x 1024 x (max_cap_len)
+            
 
         # convolution/attention layers
         attn_score = None

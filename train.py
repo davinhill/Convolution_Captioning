@@ -43,6 +43,7 @@ parser.add_argument('--model_save_path', type=str, default=os.path.dirname('./sa
 parser.add_argument('--load_model', type=str, default=None, help = 'provide the path of a model if you are loading a checkpoint')
 parser.add_argument('--accy_file', type=str, default='./saved_models/model_accuracy.json', help='provide the accuracy results file if you are loading a checkpoint')
 parser.add_argument('--temperature', type=float, default=1, help='temperature softmax')
+parser.add_argument('--bidirectional', type=bool, default=False, help = 'use bidirectional implementation?')
 
 args = parser.parse_args()
 
@@ -57,7 +58,7 @@ trainloader, valloader = load_data(path = args.data_path, batch_size = args.batc
 coco_testaccy = COCO(os.path.join(args.data_path, 'annotations/captions_val2014.json')) # create coco object for test accuracy calculation
 
 # Initialize Models
-model_cc = conv_captioning(args.vocab_size, args.kernel_size, args.num_layers, args.dropout_p, args.word_feat, args.img_feat + args.word_feat, args.attention)
+model_cc = conv_captioning(args.vocab_size, args.kernel_size, args.num_layers, args.dropout_p, args.word_feat, args.img_feat + args.word_feat, args.attention, args.bidirectional)
 model_cc.to(device)
 model_vgg = vgg_extraction(args.img_feat)
 model_vgg.to(device)
