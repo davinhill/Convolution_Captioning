@@ -189,6 +189,7 @@ for epoch in range(init_epoch, args.num_epochs):
     print("Epoch: %d || Loss: %f || Time: %s" % (epoch, loss, str(epoch_time)))
     print("========================================")
     accy = test_accy(valloader, coco_testaccy, model_vgg, model_cc, args.max_cap_len) # calc test accuracy
+    accy['loss'] = loss
     test_scores.append(accy) 
 
 
