@@ -68,8 +68,10 @@ class AttnBlock(nn.Module):
         self.attn_fc1 = nn.Linear(word_feat, attn_channels)
         self.attn_fc2 = nn.Linear(attn_channels, word_feat)
 
-    def forward(self, x, word_embed, img_conv, prev_attn):
+    def forward(self, list_input):
         
+        x, word_embed, img_conv, prev_attn = list_input[0], list_input[1], list_input[3], list_input[4]
+
         identity = x   # skip connection
         x = self.conv(x) 
         x = self.dropout(x)
@@ -111,7 +113,7 @@ class AttnBlock(nn.Module):
             identity = self.downsample(identity)
             identity = identity.transpose(1, 2)
 
-        return x + identity, word_embed, img_conv, attn_score 
+        return [x + identity, word_embed, img_conv, attn_score]
 
 
 
@@ -165,7 +167,8 @@ class conv_captioning(nn.Module):
         attn_score = None
         if self.attn:
             import pdb; pdb.set_trace()
-            x, _, _, attn_score = self.conv_n(input_embed, word_embed, img_conv, attn_score) 
+            list_output = self.conv_n([input_embed, word_embed, img_conv, attn_score]) 
+            x, attn_score = list_output[0], list_output[3]
         else:
             import pdb; pdb.set_trace()
             x = self.conv_n(input_embed)  # n x 512 x max_cap_len
