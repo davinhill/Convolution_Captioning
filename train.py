@@ -43,6 +43,7 @@ parser.add_argument('--model_save_path', type=str, default=os.path.dirname('./sa
 parser.add_argument('--load_model', type=str, default=None, help = 'provide the path of a model if you are loading a checkpoint')
 parser.add_argument('--accy_file', type=str, default='./saved_models/model_accuracy.json', help='provide the accuracy results file if you are loading a checkpoint')
 parser.add_argument('--temperature', type=float, default=1, help='temperature softmax')
+parser.add_argument('--print_accy', type=int, default=2, help='how often to calculate test accy (# epochs)')
 
 args = parser.parse_args()
 
@@ -188,9 +189,12 @@ for epoch in range(init_epoch, args.num_epochs):
     print("========================================")
     print("Epoch: %d || Loss: %f || Time: %s" % (epoch, loss, str(epoch_time)))
     print("========================================")
-    accy = test_accy(valloader, coco_testaccy, model_vgg, model_cc, args.max_cap_len) # calc test accuracy
-    accy['loss'] = loss
-    test_scores.append(accy) 
+    if (epoch % args.print_accy == 1 or epoch == (args.num_epochs -1)):
+        accy_time_start = datetime.now()
+        accy = test_accy(valloader, coco_testaccy, model_vgg, model_cc, args.max_cap_len) # calc test accuracy
+        print("accy calculation took.... ", datetime.now() - accy_time_start)
+        accy['loss'], accy['epoch'] = loss, epoch
+        test_scores.append(accy) 
 
 
     # Save Checkpoint
