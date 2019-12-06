@@ -76,22 +76,25 @@ class AttnBlock(nn.Module):
         x = F.glu(x, 1)  # reduces feature dimenion by 1/2. 
         x = x[:,:,:-(self.kernel_size-1)]  # truncate by kernel_size - 1
         # n x 512 x max_cap_len
+
         import pdb; pdb.set_trace()
         # Attention ################## 
         identity_attn = x # n x 512 x max_cap_len
 
-        # up/downsample output of convolution layer to match original word embedding and then combine
+        # apply linear layer to x, then combine with word embedding
         x = self.attn_fc1(x.transpose(1, 2)) + word_embed # n x max_cap_len x 512
+        # in the paper, this is denoted W(d_j)
 
         # flatten each attn channel
-        rs = img_conv.shape()
         attn_feat = img_conv.flatten(2) # n x 512 x 49
+        # in the paper, this is denoted c_i
 
         # Calc softmax on each attn channel
         attn_score = torch.matmul(x, attn_feat) # n x max_cap_len x 49
+        rs = attn_score.shape()  # n x 512 x 49
         attn_score = attn_score.flatten(end_dim = 1) # (n * max_cap_len) x 49
-        attn_score = F.softmax(attn_score)
-        attn_score = attn_score.reshape(rs) # n x max_cap_len x 7 x 7
+        attn_score = F.softmax(attn_score) # I don't necessarily think this is correct, at least according to the paper?
+        attn_score = attn_score.reshape(rs) # n x 512 x 49
         x = torch.matmul(attn_score, attn_feat.transpose(1, 2)) # n x max_cap_len x 512
 
         # up/downsample x to revert it back to the convolution layer output dimensions

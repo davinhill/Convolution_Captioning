@@ -152,7 +152,7 @@ for epoch in range(init_epoch, args.num_epochs):
         # calculate Cross-Entropy loss
         if args.attention:
             # regular loss + MSE of Attention
-            loss = criterion(caption_pred[word_mask, :], caption_target[word_mask]) + 1 
+            loss = criterion(caption_pred[word_mask, :], caption_target[word_mask])  
         else:
             loss = criterion(caption_pred[word_mask, :], caption_target[word_mask])   
 
