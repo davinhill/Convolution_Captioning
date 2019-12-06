@@ -70,7 +70,7 @@ class AttnBlock(nn.Module):
 
     def forward(self, list_input):
         
-        x, word_embed, img_conv, prev_attn = list_input[0], list_input[1], list_input[3], list_input[4]
+        x, word_embed, img_conv, prev_attn = list_input[0], list_input[1], list_input[2], list_input[3]
 
         identity = x   # skip connection
         x = self.conv(x) 
@@ -79,7 +79,6 @@ class AttnBlock(nn.Module):
         x = x[:,:,:-(self.kernel_size-1)]  # truncate by kernel_size - 1
         # n x 512 x max_cap_len
 
-        import pdb; pdb.set_trace()
         # Attention ################## 
         identity_attn = x # n x 512 x max_cap_len
 
@@ -93,9 +92,9 @@ class AttnBlock(nn.Module):
 
         # Calc softmax on each attn channel
         attn_score = torch.matmul(x, attn_feat) # n x max_cap_len x 49
-        rs = attn_score.shape()  # n x 512 x 49
+        rs = attn_score.size()  # n x 512 x 49
         attn_score = attn_score.flatten(end_dim = 1) # (n * max_cap_len) x 49
-        attn_score = F.softmax(attn_score) # I don't necessarily think this is correct, at least according to the paper?
+        attn_score = F.softmax(attn_score, 1) # I don't necessarily think this is correct, at least according to the paper?
         attn_score = attn_score.reshape(rs) # n x 512 x 49
         x = torch.matmul(attn_score, attn_feat.transpose(1, 2)) # n x max_cap_len x 512
 
@@ -166,11 +165,9 @@ class conv_captioning(nn.Module):
         # convolution/attention layers
         attn_score = None
         if self.attn:
-            import pdb; pdb.set_trace()
             list_output = self.conv_n([input_embed, word_embed, img_conv, attn_score]) 
             x, attn_score = list_output[0], list_output[3]
         else:
-            import pdb; pdb.set_trace()
             x = self.conv_n(input_embed)  # n x 512 x max_cap_len
 
         # classifier layers

@@ -148,7 +148,7 @@ for epoch in range(init_epoch, args.num_epochs):
         caption_pred = pred.transpose(1, 2).reshape(batch_size * (args.max_cap_len-1), -1) # n * (max_cap_len-1) x vocab_size (probability dist'n over all words)
         caption_target = caption_tknID.reshape(batch_size * (args.max_cap_len-1))  # n * (max_cap_len-1) x 1
         word_mask = caption_target.nonzero().reshape(-1) # the word mask filters out "unused words" when the GT caption is shorter than the max caption length.
-        import pdb; pdb.set_trace()
+
         # calculate Cross-Entropy loss
         if args.attention:
             # regular loss + MSE of Attention
