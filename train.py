@@ -90,7 +90,7 @@ if args.load_model is not None:
     optimizer_vgg.load_state_dict(checkpoint['optimizer_img'])
     scheduler_vgg.load_state_dict(checkpoint['scheduler_img'])
 
-    test_scores = json.load(open('/saved_models/model_accuracy.json', 'r'))
+    test_scores = json.load(open(args.accy_file, 'r'))
 
 # ======================================================
     # Train
@@ -176,7 +176,7 @@ for epoch in range(init_epoch, args.num_epochs):
 
             
             # Print an example caption
-            z = gen_caption(image, model_vgg, model_cc)
+            z = gen_caption(image, model_vgg, model_cc, args.vocab_size, args.max_cap_len)
             print('TEST------------------')
             print(z[0])
 
@@ -229,5 +229,5 @@ for epoch in range(init_epoch, args.num_epochs):
     json.dump(test_scores, open(os.path.join(args.model_save_path, 'model_accuracy.json'), 'w'))
 
     # Save highest-scoring model
-    if accy['Bleu_1'] > max([value['Bleu_1'] for value in test_scores]):
+    if accy['Bleu_1'] >= max([value['Bleu_1'] for value in test_scores]):
         torch.save(checkpoint, os.path.join(args.model_save_path, 'best_model.pt'))
