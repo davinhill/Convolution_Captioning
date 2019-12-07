@@ -50,7 +50,7 @@ class resnet_extraction(nn.Module):
         self.feature_layers = nn.Sequential(*(list(resnet_pretrained.children())[:-2]))
         
         self.pool = nn.AvgPool2d(kernel_size = 7, stride = 1, padding = 0)
-        self.fc = nn.Linear(512, 512)
+        self.fc = nn.Linear(512, img_feat)
 
     def forward(self, x):
         # output of convolutions layers (for attention calculations)
@@ -68,7 +68,7 @@ class resnet_extraction(nn.Module):
 
 
 # ======================================================
-# Pretrained resnet18 model for image extraction
+# Pretrained densenet for image extraction
 # ======================================================
 densenet_pretrained = models.densenet121(pretrained=True)
 
@@ -79,7 +79,7 @@ class densenet_extraction(nn.Module):
         # 7 x 7 x 1024
         self.feature_layers = densenet_pretrained.features
         self.downsample = nn.Conv2d(in_channels = 1024, out_channels = 512, kernel_size = 1, stride = 1, padding = 0)
-        self.fc = nn.Linear(1024, 512)
+        self.fc = nn.Linear(1024, img_feat)
 
     def forward(self, x):
         # output of convolutions layers (for attention calculations)
