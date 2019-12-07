@@ -90,7 +90,7 @@ if args.load_model is not None:
     optimizer_vgg.load_state_dict(checkpoint['optimizer_img'])
     scheduler_vgg.load_state_dict(checkpoint['scheduler_img'])
 
-    test_scores = json.load(open('/saved_models/model_accuracy.json', 'r'))
+    test_scores = json.load(open(args.accy_file, 'r'))
 
 # ======================================================
     # Train
@@ -157,7 +157,7 @@ for epoch in range(init_epoch, args.num_epochs):
 
         # calculate Cross-Entropy loss
         loss = criterion(caption_pred[word_mask, :]/args.temperature, caption_target[word_mask]/args.temperature)   
-        word_accy = sum(np.argmax(caption_pred[word_mask, :].cpu().detach(), axis = 1) == caption_target[word_mask])
+        word_accy = sum(np.argmax(caption_pred[word_mask, :].cpu().detach(), axis = 1) == caption_target[word_mask].cpu())
 
         loss.backward()
         optimizer.step()
@@ -170,13 +170,13 @@ for epoch in range(init_epoch, args.num_epochs):
         counter_batch += 1
         counter_words += len(word_mask)
 
-        if batchID % 1000 == 0:
+        if batchID % 2000 == 0:
             epoch_time = datetime.now() - batch_start
             print("Batch: %d || Loss: %f || Time: %s" % (batchID, loss, str(epoch_time)))
 
             
             # Print an example caption
-            z = gen_caption(image, model_vgg, model_cc)
+            z, _, _ = gen_caption(image, model_vgg, model_cc, args.vocab_size, args.max_cap_len)
             print('TEST------------------')
             print(z[0])
 
@@ -204,9 +204,14 @@ for epoch in range(init_epoch, args.num_epochs):
     print("========================================")
     if (epoch % args.print_accy == 1 or epoch == (args.num_epochs -1)):
         accy_time_start = datetime.now()
-        accy = test_accy(valloader, coco_testaccy, model_vgg, model_cc, args.max_cap_len) # calc test accuracy
-        print("accy calculation took.... ", datetime.now() - accy_time_start)
+        accy, test_loss, test_waccy = test_accy(valloader, coco_testaccy, model_vgg, model_cc, args) # calc test accuracy
+        accy_calc_time = datetime.now() - accy_time_start
+        print("accy calculation took.... ", str(accy_calc_time))
+        print("test_accy: ", test_waccy)
+        print("test_loss: ", test_loss)
         accy['train_loss'], accy['epoch'], accy['train_word_accy'] = epoch_loss, epoch, epoch_word_accy
+        accy['test_loss'], accy['test_word_accy'] = test_loss, test_waccy
+        accy['train_time'], accy['accy_calc_time'] = epoch_time, accy_calc_time
         test_scores.append(accy) 
 
 
@@ -226,5 +231,5 @@ for epoch in range(init_epoch, args.num_epochs):
     json.dump(test_scores, open(os.path.join(args.model_save_path, 'model_accuracy.json'), 'w'))
 
     # Save highest-scoring model
-    if accy['Bleu_1'] > max([value['Bleu_1'] for value in test_scores]):
+    if accy['Bleu_1'] >= max([value['Bleu_1'] for value in test_scores]):
         torch.save(checkpoint, os.path.join(args.model_save_path, 'best_model.pt'))
