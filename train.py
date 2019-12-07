@@ -99,8 +99,10 @@ if args.load_model is not None:
 for epoch in range(init_epoch, args.num_epochs):
 
     epoch_time_start = datetime.now()
-    counter = 0
+    counter_batch = 0
+    counter_words = 0
     epoch_loss = 0
+    epoch_word_accy = 0
 
     # start training vgg after specified number of epochs
     if epoch >= args.train_vgg:
@@ -155,15 +157,18 @@ for epoch in range(init_epoch, args.num_epochs):
 
         # calculate Cross-Entropy loss
         loss = criterion(caption_pred[word_mask, :]/args.temperature, caption_target[word_mask]/args.temperature)   
+        word_accy = sum(np.argmax(caption_pred[word_mask, :].cpu().detach(), axis = 1) == caption_target[word_mask])
 
         loss.backward()
         optimizer.step()
         if train_vgg:
             optimizer_vgg.step()
 
-        # calculate avg epoch loss
+        # calculate avg epoch loss / accy
         epoch_loss += loss
-        counter += 1
+        epoch_word_accy += word_accy
+        counter_batch += 1
+        counter_words += len(word_mask)
 
         if batchID % 1000 == 0:
             epoch_time = datetime.now() - batch_start
@@ -192,15 +197,16 @@ for epoch in range(init_epoch, args.num_epochs):
         scheduler_vgg.step()
 
     epoch_time = datetime.now() - epoch_time_start
-    epoch_loss /= counter
+    epoch_loss /= counter_batch
+    epoch_word_accy /= counter_words
     print("========================================")
-    print("Epoch: %d || Loss: %f || Time: %s" % (epoch, epoch_loss, str(epoch_time)))
+    print("Epoch: %d || Train_Loss: %f || Train_Accy: %f || Time: %s" % (epoch, epoch_loss, epoch_word_accy, str(epoch_time)))
     print("========================================")
     if (epoch % args.print_accy == 1 or epoch == (args.num_epochs -1)):
         accy_time_start = datetime.now()
         accy = test_accy(valloader, coco_testaccy, model_vgg, model_cc, args.max_cap_len) # calc test accuracy
         print("accy calculation took.... ", datetime.now() - accy_time_start)
-        accy['loss'], accy['epoch'] = epoch_loss, epoch
+        accy['train_loss'], accy['epoch'], accy['train_word_accy'] = epoch_loss, epoch, epoch_word_accy
         test_scores.append(accy) 
 
 
