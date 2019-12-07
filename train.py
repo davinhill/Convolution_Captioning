@@ -13,9 +13,10 @@ import argparse
 from datetime import datetime
 import json
 
-from models import conv_captioning, vgg_extraction
+from models import conv_captioning
 from dataloader import load_data
 from eval import test_accy, id_to_word, gen_caption
+from img_encoders import vgg_extraction, resnet_extraction, densenet_extraction
 
 # ======================================================
     # Input Parameters
@@ -44,6 +45,7 @@ parser.add_argument('--load_model', type=str, default=None, help = 'provide the 
 parser.add_argument('--accy_file', type=str, default='./saved_models/model_accuracy.json', help='provide the accuracy results file if you are loading a checkpoint')
 parser.add_argument('--temperature', type=float, default=1, help='temperature softmax')
 parser.add_argument('--print_accy', type=int, default=2, help='how often to calculate test accy (# epochs)')
+parser.add_argument('--img_model', type=str, default='vgg', help='vgg, resnet, or densenet')
 
 args = parser.parse_args()
 
@@ -60,8 +62,18 @@ coco_testaccy = COCO(os.path.join(args.data_path, 'annotations/captions_val2014.
 # Initialize Models
 model_cc = conv_captioning(args.vocab_size, args.kernel_size, args.num_layers, args.dropout_p, args.word_feat, args.img_feat + args.word_feat, args.attention)
 model_cc.to(device)
-model_vgg = vgg_extraction(args.img_feat)
+
+if args.img_model == 'resnet':
+    print('Loading Resnet18 Image Encoder...')
+    model_vgg = resnet_extraction(args.img_feat)
+elif args.img_model == 'densenet':
+    print('Loading Densenet121 Image Encoder...')
+    model_vgg = densenet_extraction(args.img_feat)
+else:
+    print('Loading VGG16 Image Encoder...')
+    model_vgg = vgg_extraction(args.img_feat)
 model_vgg.to(device)
+
 
 # Initialize optimizer
 optimizer = torch.optim.RMSprop(model_cc.parameters(), lr = args.initial_lr)

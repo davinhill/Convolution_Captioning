@@ -7,12 +7,11 @@ import torch.nn.functional as F
 # ======================================================
 # VGG16 Model for extracting image features
 # ======================================================
-vgg_pretrained = models.vgg16(pretrained=True)
-
-
 class vgg_extraction(nn.Module):
     def __init__(self, img_feat):
         super(vgg_extraction, self).__init__()
+
+        vgg_pretrained = models.vgg16(pretrained=True)
 
         # all convolution layers in VGG, final layer is maxpool
         self.feature_layers = vgg_pretrained.features
@@ -38,12 +37,11 @@ class vgg_extraction(nn.Module):
 # ======================================================
 # Pretrained resnet18 model for image extraction
 # ======================================================
-resnet_pretrained = models.resnet18(pretrained=True)
-
-
 class resnet_extraction(nn.Module):
     def __init__(self, img_feat):
         super(resnet_extraction, self).__init__()
+
+        resnet_pretrained = models.resnet18(pretrained=True)
 
         # convolution output, for use with attention
         # 7 x 7 x 512
@@ -70,11 +68,11 @@ class resnet_extraction(nn.Module):
 # ======================================================
 # Pretrained densenet for image extraction
 # ======================================================
-densenet_pretrained = models.densenet121(pretrained=True)
-
 class densenet_extraction(nn.Module):
     def __init__(self, img_feat):
         super(densenet_extraction, self).__init__()
+
+        densenet_pretrained = models.densenet121(pretrained=True)
 
         # 7 x 7 x 1024
         self.feature_layers = densenet_pretrained.features
