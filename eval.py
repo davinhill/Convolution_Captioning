@@ -125,7 +125,6 @@ def test_accy(dataloader, coco_object, image_model, caption_model, args):
         for batchID, (image, _, caption_tknID, image_id) in enumerate(dataloader):
             pred_caption_str, pred_caption_tknID, pred_caption_prob = gen_caption(image, image_model, caption_model, args.vocab_size, args.max_cap_len, image_id)
             pred.extend(pred_caption_str)
-            import pdb; pdb.set_trace()
             # reshape caption to account for num captions per image
             batch_size = image.shape[0] 
             caption_tknID = caption_tknID.reshape(batch_size * args.num_caps_per_img, args.max_cap_len) #batch_size * 5 x max_cap_len

@@ -176,7 +176,7 @@ for epoch in range(init_epoch, args.num_epochs):
 
             
             # Print an example caption
-            z = gen_caption(image, model_vgg, model_cc, args.vocab_size, args.max_cap_len)
+            z, _, _ = gen_caption(image, model_vgg, model_cc, args.vocab_size, args.max_cap_len)
             print('TEST------------------')
             print(z[0])
 
