@@ -108,17 +108,29 @@ def gen_caption(image, image_model, caption_model, max_cap_len = 15, imgID = Non
         else:
             caption_str.append(output)
 
-    return caption_str
+    return caption_str, caption_tknID
 
 
 # ================================
 # Calculate test accuracy based on a given dataloader
 # ================================
-def test_accy(dataloader, coco_object, image_model, caption_model, max_cap_len):
+def test_accy(dataloader, coco_object, image_model, caption_model, args):
     with torch.no_grad():
         pred = []
-        for batchID, (image, image_id) in enumerate(dataloader):
-            pred.extend(gen_caption(image, image_model, caption_model, max_cap_len, image_id))
+        word_accy = 0
+        for batchID, (image, _, caption_tknID, image_id) in enumerate(dataloader):
+            pred_caption_str, pred_caption_tknID = gen_caption(image, image_model, caption_model, args.max_cap_len, image_id)
+            pred.extend(pred_caption_str)
+            import pdb; pdb.set_trace()
+            # reshape caption to account for num captions per image
+            batch_size = image.shape[0] 
+            caption_tknID = caption_tknID.reshape(batch_size * args.num_caps_per_img, args.max_cap_len) #batch_size * 5 x max_cap_len
+
+            # calculate word accy
+            word_accy += sum(np.argmax(pred_caption_tknID[word_mask, :].cpu().detach(), axis = 1) == caption_tknID[word_mask])
+             
+            # calculate test loss 
+
     print(pred[0])
     print(pred[1])
     return eval_accy(pred, coco_object)
