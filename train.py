@@ -205,11 +205,13 @@ for epoch in range(init_epoch, args.num_epochs):
     if (epoch % args.print_accy == 1 or epoch == (args.num_epochs -1)):
         accy_time_start = datetime.now()
         accy, test_loss, test_waccy = test_accy(valloader, coco_testaccy, model_vgg, model_cc, args) # calc test accuracy
-        print("accy calculation took.... ", datetime.now() - accy_time_start)
+        accy_calc_time = datetime.now() - accy_time_start
+        print("accy calculation took.... ", accy_calc_time)
         print("test_accy: ", test_waccy)
         print("test_loss: ", test_loss)
         accy['train_loss'], accy['epoch'], accy['train_word_accy'] = epoch_loss, epoch, epoch_word_accy
         accy['test_loss'], accy['test_word_accy'] = test_loss, test_waccy
+        accy['train_time'], accy['accy_calc_time'] = epoch_time, accy_calc_time
         test_scores.append(accy) 
 
 
