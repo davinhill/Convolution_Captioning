@@ -62,11 +62,12 @@ def eval_accy(predictions, coco_object):
 # if imgID (the list of image IDs assocated with the provided images), this function will return a list of dictionary
 # objects, with 'image_id' and 'caption', for use with the CocoEvalAPI.
 # ================================
-def gen_caption(image, image_model, caption_model, max_cap_len = 15, imgID = None):
+def gen_caption(image, image_model, caption_model, vocab_size, max_cap_len = 15, imgID = None):
 
     batch_size = image.shape[0]
     caption_tknID = torch.zeros(batch_size, max_cap_len, dtype = torch.long)# initialize tkn predictions
     caption_tknID[:,0] = 1   # <S> token
+    caption_prob = torch.zeros(batch_size, max_cap_len, vocab_size)
 
     # Set models to eval mode and move to GPU
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -82,11 +83,11 @@ def gen_caption(image, image_model, caption_model, max_cap_len = 15, imgID = Non
         # generate model predictions for the next word, based on the previously-"stored" predictions
         pred, _ = caption_model(caption_tknID, img_fc, img_conv) # n x vocab_size x max_cap_len
         pred = pred.cpu().detach()
-        pred = np.argmax(pred, axis = 1)    # n x max_cap_len
+        pred_word = np.argmax(pred, axis = 1)    # n x max_cap_len
 
         # update "stored" predictions
-        caption_tknID[:, i+1] = pred[:, i]
-
+        caption_tknID[:, i+1] = pred_word[:, i]
+        caption_prob[:, i+1, :] = pred.transpose(1, 2)[:, i, :]
     
     # convert IDs to words
     id_conversion_array = np.load('id_to_word.npy')
@@ -108,7 +109,7 @@ def gen_caption(image, image_model, caption_model, max_cap_len = 15, imgID = Non
         else:
             caption_str.append(output)
 
-    return caption_str, caption_tknID
+    return caption_str, caption_tknID, caption_prob
 
 
 # ================================
@@ -118,22 +119,38 @@ def test_accy(dataloader, coco_object, image_model, caption_model, args):
     with torch.no_grad():
         pred = []
         word_accy = 0
+        loss = 0
+        counter_batch = 0
+        counter_num_words = 0
         for batchID, (image, _, caption_tknID, image_id) in enumerate(dataloader):
-            pred_caption_str, pred_caption_tknID = gen_caption(image, image_model, caption_model, args.max_cap_len, image_id)
+            pred_caption_str, pred_caption_tknID, pred_caption_prob = gen_caption(image, image_model, caption_model, args.vocab_size, args.max_cap_len, image_id)
             pred.extend(pred_caption_str)
             import pdb; pdb.set_trace()
             # reshape caption to account for num captions per image
             batch_size = image.shape[0] 
             caption_tknID = caption_tknID.reshape(batch_size * args.num_caps_per_img, args.max_cap_len) #batch_size * 5 x max_cap_len
+            pred_caption_tknID = pred_caption_tknID.unsqueeze(1).expand(-1, args.num_caps_per_img, -1).reshape(batch_size * args.num_caps_per_img, -1) # batch_size * 5 x max_cap_len
+            pred_caption_prob = pred_caption_prob.unsqueeze(1).expand(-1, args.num_caps_per_img, -1, -1).flatten(end_dim = 1) # batch_size * 5 x max_cap_len x vocab_size
 
-            # calculate word accy
-            word_accy += sum(np.argmax(pred_caption_tknID[word_mask, :].cpu().detach(), axis = 1) == caption_tknID[word_mask])
-             
+
+            # reshape pred / GT such that pred does not include <S>
+            caption_tknID = caption_tknID[:, 1:] # (batch_size * 5) x (max_cap_len - 1)
+            pred_caption_tknID = pred_caption_tknID[:, 1:] # (batch_size * 5) x (max_cap_len - 1)
+            pred_caption_prob = pred_caption_prob[:, :-1, :]  # batch_size x vocab_size x (max_cap_len - 1)
+
+            caption_tknID = caption_tknID.flatten()
+            pred_caption_tknID = pred_caption_tknID.flatten()
+            pred_caption_prob = pred_caption_prob.flatten(end_dim = 1)
+            word_mask = caption_tknID.nonzero().flatten() # the word mask filters out "unused words" when the GT caption is shorter than the max caption length.
+
             # calculate test loss 
-
+            loss += F.cross_entropy(pred_caption_prob, caption_tknID)
+            word_accy += sum(pred_caption_tknID[word_mask].cpu() == caption_tknID[word_mask].cpu())
+            counter_batch += 1
+            counter_num_words += 1
     print(pred[0])
     print(pred[1])
-    return eval_accy(pred, coco_object)
+    return eval_accy(pred, coco_object), loss / counter_batch, word_accy / counter_num_words
 
 
 
