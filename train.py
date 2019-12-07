@@ -206,7 +206,10 @@ for epoch in range(init_epoch, args.num_epochs):
         accy_time_start = datetime.now()
         accy, test_loss, test_waccy = test_accy(valloader, coco_testaccy, model_vgg, model_cc, args) # calc test accuracy
         print("accy calculation took.... ", datetime.now() - accy_time_start)
+        print("test_accy: ", test_waccy)
+        print("test_loss: ", test_loss)
         accy['train_loss'], accy['epoch'], accy['train_word_accy'] = epoch_loss, epoch, epoch_word_accy
+        accy['test_loss'], accy['test_word_accy'] = test_loss, test_waccy
         test_scores.append(accy) 
 
 
