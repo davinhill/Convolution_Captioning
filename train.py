@@ -99,6 +99,8 @@ if args.load_model is not None:
 for epoch in range(init_epoch, args.num_epochs):
 
     epoch_time_start = datetime.now()
+    counter = 0
+    epoch_loss = 0
 
     # start training vgg after specified number of epochs
     if epoch >= args.train_vgg:
@@ -159,6 +161,10 @@ for epoch in range(init_epoch, args.num_epochs):
         if train_vgg:
             optimizer_vgg.step()
 
+        # calculate avg epoch loss
+        epoch_loss += loss
+        counter += 1
+
         if batchID % 1000 == 0:
             epoch_time = datetime.now() - batch_start
             print("Batch: %d || Loss: %f || Time: %s" % (batchID, loss, str(epoch_time)))
@@ -186,14 +192,15 @@ for epoch in range(init_epoch, args.num_epochs):
         scheduler_vgg.step()
 
     epoch_time = datetime.now() - epoch_time_start
+    epoch_loss /= counter
     print("========================================")
-    print("Epoch: %d || Loss: %f || Time: %s" % (epoch, loss, str(epoch_time)))
+    print("Epoch: %d || Loss: %f || Time: %s" % (epoch, epoch_loss, str(epoch_time)))
     print("========================================")
     if (epoch % args.print_accy == 1 or epoch == (args.num_epochs -1)):
         accy_time_start = datetime.now()
         accy = test_accy(valloader, coco_testaccy, model_vgg, model_cc, args.max_cap_len) # calc test accuracy
         print("accy calculation took.... ", datetime.now() - accy_time_start)
-        accy['loss'], accy['epoch'] = loss, epoch
+        accy['loss'], accy['epoch'] = epoch_loss, epoch
         test_scores.append(accy) 
 
 
