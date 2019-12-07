@@ -170,7 +170,7 @@ for epoch in range(init_epoch, args.num_epochs):
         counter_batch += 1
         counter_words += len(word_mask)
 
-        if batchID % 1000 == 0:
+        if batchID % 2000 == 0:
             epoch_time = datetime.now() - batch_start
             print("Batch: %d || Loss: %f || Time: %s" % (batchID, loss, str(epoch_time)))
 
@@ -206,7 +206,7 @@ for epoch in range(init_epoch, args.num_epochs):
         accy_time_start = datetime.now()
         accy, test_loss, test_waccy = test_accy(valloader, coco_testaccy, model_vgg, model_cc, args) # calc test accuracy
         accy_calc_time = datetime.now() - accy_time_start
-        print("accy calculation took.... ", accy_calc_time)
+        print("accy calculation took.... ", str(accy_calc_time))
         print("test_accy: ", test_waccy)
         print("test_loss: ", test_loss)
         accy['train_loss'], accy['epoch'], accy['train_word_accy'] = epoch_loss, epoch, epoch_word_accy
