@@ -46,6 +46,7 @@ parser.add_argument('--accy_file', type=str, default='./saved_models/model_accur
 parser.add_argument('--temperature', type=float, default=1, help='temperature softmax')
 parser.add_argument('--print_accy', type=int, default=2, help='how often to calculate test accy (# epochs)')
 parser.add_argument('--img_model', type=str, default='vgg', help='vgg, resnet, or densenet')
+parser.add_argument('--num_test_batches', type=int, default=500, help='number of batches to use when calculating test accy. always uses full dataset for the last epoch.')
 
 args = parser.parse_args()
 

@@ -115,14 +115,31 @@ def gen_caption(image, image_model, caption_model, vocab_size, max_cap_len = 15,
 # ================================
 # Calculate test accuracy based on a given dataloader
 # ================================
-def test_accy(dataloader, coco_object, image_model, caption_model, args):
+def test_accy(dataloader, coco_object, image_model, caption_model, epoch, args):
     with torch.no_grad():
+
+        # initialize counters
         pred = []
         word_accy = 0
         loss = 0
         counter_batch = 0
         counter_num_words = 0
-        for batchID, (image, _, caption_tknID, image_id) in enumerate(dataloader):
+
+        # set number of batches on which to calculate test metrics
+        if epoch == (args.num_epochs -1):
+            num_batches = 41000 // args.batch_size
+        else:
+            num_batches = args.num_test_batches
+
+        # loop over # of batches
+        data_iterator = iter(dataloader)
+        for i in range(num_batches):  # iterate for the specified number of batches
+            try:
+                image, _, caption_tknID, image_id = next(data_iterator)
+            except StopIteration:
+                data_iterator = iter(dataloader)
+                image, _, caption_tknID, image_id = next(data_iterator)
+
             pred_caption_str, pred_caption_tknID, pred_caption_prob = gen_caption(image, image_model, caption_model, args.vocab_size, args.max_cap_len, image_id)
             pred.extend(pred_caption_str)
             # reshape caption to account for num captions per image
@@ -147,8 +164,7 @@ def test_accy(dataloader, coco_object, image_model, caption_model, args):
             word_accy += sum(pred_caption_tknID[word_mask].cpu() == caption_tknID[word_mask].cpu()).item()
             counter_batch += 1
             counter_num_words += 1
-    print(pred[0])
-    print(pred[1])
+
     return eval_accy(pred, coco_object), loss / counter_batch, word_accy / counter_num_words
 
 
