@@ -150,7 +150,7 @@ def test_accy(dataloader, coco_object, image_model, caption_model, epoch, args):
 
             # reshape pred / GT such that pred does not include <S>
             caption_tknID = caption_tknID[:, 1:] # (batch_size * 5) x (max_cap_len - 1)
-            pred_caption_tknID = pred_caption_tknID[:, 1:] # (batch_size * 5) x (max_cap_len - 1)
+            pred_caption_tknID = pred_caption_tknID[:, :-1] # (batch_size * 5) x (max_cap_len - 1)
             pred_caption_prob = pred_caption_prob[:, :-1, :]  # batch_size x vocab_size x (max_cap_len - 1)
 
             caption_tknID = caption_tknID.flatten()
