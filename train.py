@@ -217,7 +217,7 @@ for epoch in range(init_epoch, args.num_epochs):
     print("========================================")
     if (epoch % args.print_accy == 1 or epoch == (args.num_epochs -1)):
         accy_time_start = datetime.now()
-        accy, test_loss, test_waccy = test_accy(valloader, coco_testaccy, model_vgg, model_cc, args) # calc test accuracy
+        accy, test_loss, test_waccy = test_accy(valloader, coco_testaccy, model_vgg, model_cc, epoch, args) # calc test accuracy
         accy_calc_time = datetime.now() - accy_time_start
         print("accy calculation took.... ", str(accy_calc_time))
         print("test_accy: ", test_waccy)

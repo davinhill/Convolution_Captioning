@@ -126,7 +126,7 @@ def test_accy(dataloader, coco_object, image_model, caption_model, epoch, args):
         counter_num_words = 0
 
         # set number of batches on which to calculate test metrics
-        if epoch == (args.num_epochs -1):
+        if epoch >= (args.num_epochs -3):
             num_batches = 41000 // args.batch_size
         else:
             num_batches = args.num_test_batches
