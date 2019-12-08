@@ -44,7 +44,7 @@ parser.add_argument('--model_save_path', type=str, default=os.path.dirname('./sa
 parser.add_argument('--load_model', type=str, default=None, help = 'provide the path of a model if you are loading a checkpoint')
 parser.add_argument('--accy_file', type=str, default='./saved_models/model_accuracy.json', help='provide the accuracy results file if you are loading a checkpoint')
 parser.add_argument('--temperature', type=float, default=1, help='temperature softmax')
-parser.add_argument('--print_accy', type=int, default=2, help='how often to calculate test accy (# epochs)')
+parser.add_argument('--print_accy', type=int, default=1, help='how often to calculate test accy (# epochs)')
 parser.add_argument('--img_model', type=str, default='vgg', help='vgg, resnet, or densenet')
 parser.add_argument('--num_test_batches', type=int, default=500, help='number of batches to use when calculating test accy. always uses full dataset for the last epoch.')
 
@@ -224,7 +224,7 @@ for epoch in range(init_epoch, args.num_epochs):
         print("test_loss: ", test_loss)
         accy['train_loss'], accy['epoch'], accy['train_word_accy'] = epoch_loss, epoch, epoch_word_accy
         accy['test_loss'], accy['test_word_accy'] = test_loss, test_waccy
-        accy['train_time'], accy['accy_calc_time'] = epoch_time, accy_calc_time
+        accy['train_time'], accy['accy_calc_time'] = epoch_time.seconds/60, accy_calc_time.seconds/60
         test_scores.append(accy) 
 
 
