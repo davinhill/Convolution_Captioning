@@ -177,8 +177,8 @@ for epoch in range(init_epoch, args.num_epochs):
             optimizer_vgg.step()
 
         # calculate avg epoch loss / accy
-        epoch_loss += loss
-        epoch_word_accy += word_accy
+        epoch_loss += loss.item()
+        epoch_word_accy += word_accy.item()
         counter_batch += 1
         counter_words += len(word_mask)
 

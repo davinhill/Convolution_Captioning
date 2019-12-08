@@ -143,8 +143,8 @@ def test_accy(dataloader, coco_object, image_model, caption_model, args):
             word_mask = caption_tknID.nonzero().flatten() # the word mask filters out "unused words" when the GT caption is shorter than the max caption length.
 
             # calculate test loss 
-            loss += F.cross_entropy(pred_caption_prob, caption_tknID)
-            word_accy += sum(pred_caption_tknID[word_mask].cpu() == caption_tknID[word_mask].cpu())
+            loss += F.cross_entropy(pred_caption_prob, caption_tknID).item()
+            word_accy += sum(pred_caption_tknID[word_mask].cpu() == caption_tknID[word_mask].cpu()).item()
             counter_batch += 1
             counter_num_words += 1
     print(pred[0])
