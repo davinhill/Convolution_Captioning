@@ -215,7 +215,7 @@ for epoch in range(init_epoch, args.num_epochs):
     print("========================================")
     print("Epoch: %d || Train_Loss: %f || Train_Accy: %f || Time: %s" % (epoch, epoch_loss, epoch_word_accy, str(epoch_time)))
     print("========================================")
-    if (epoch % args.print_accy == 0 or epoch == (args.num_epochs -1)):
+    if (epoch % args.print_accy == 0 and args.print_accy != 0) or (epoch == (args.num_epochs -1)):
         accy_time_start = datetime.now()
         accy, test_loss, test_waccy = test_accy(valloader, coco_testaccy, model_vgg, model_cc, epoch, args) # calc test accuracy
         accy_calc_time = datetime.now() - accy_time_start
@@ -227,22 +227,23 @@ for epoch in range(init_epoch, args.num_epochs):
         accy['train_time'], accy['accy_calc_time'] = epoch_time.seconds/60, accy_calc_time.seconds/60
         test_scores.append(accy) 
 
-
-        # Save Checkpoint
-        checkpoint = {'epoch': epoch,
-                    'state_dict_cap': model_cc.state_dict(),
-                    'optimizer_cap': optimizer.state_dict(),
-                    'scheduler_cap': scheduler.state_dict(),
-
-                    'state_dict_img': model_vgg.state_dict(),
-                    'optimizer_img': optimizer_vgg.state_dict(),
-                    'scheduler_img': scheduler_vgg.state_dict()
-                    }
-
-        # Write Checkpoint to disk
-        torch.save(checkpoint, os.path.join(args.model_save_path, 'checkpoint.pt'))
+        # save scores to file
         json.dump(test_scores, open(os.path.join(args.model_save_path, 'model_accuracy.json'), 'w'))
 
-        # Save highest-scoring model
-        if accy['Bleu_1'] >= max([value['Bleu_1'] for value in test_scores]):
-            torch.save(checkpoint, os.path.join(args.model_save_path, 'best_model.pt'))
+    # Save Checkpoint
+    checkpoint = {'epoch': epoch,
+                'state_dict_cap': model_cc.state_dict(),
+                'optimizer_cap': optimizer.state_dict(),
+                'scheduler_cap': scheduler.state_dict(),
+
+                'state_dict_img': model_vgg.state_dict(),
+                'optimizer_img': optimizer_vgg.state_dict(),
+                'scheduler_img': scheduler_vgg.state_dict()
+                }
+
+    # Write Checkpoint to disk
+    torch.save(checkpoint, os.path.join(args.model_save_path, 'checkpoint.pt'))
+
+    # Save highest-scoring model
+    if accy['Bleu_1'] >= max([value['Bleu_1'] for value in test_scores]):
+        torch.save(checkpoint, os.path.join(args.model_save_path, 'best_model.pt'))
