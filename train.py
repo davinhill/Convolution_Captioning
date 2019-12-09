@@ -124,10 +124,7 @@ for epoch in range(init_epoch, args.num_epochs):
         train_vgg = False
 
     model_cc.train()
-    if train_vgg:
-        model_vgg.train()
-    else:
-        model_vgg.eval() # will putting it in eval mode impact caption training?
+    model_vgg.train()
 
 
     for batchID, (image, caption, caption_tknID, imgID) in enumerate(trainloader):
