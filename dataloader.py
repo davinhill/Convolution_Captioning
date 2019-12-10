@@ -14,10 +14,23 @@ import pickle
 import nltk
 import numpy as np
 nltk.download('punkt')
+import json
 
-# I still need to fix the issue of caption length
-# Also, need to figure out how to limit vocabulary size
 # Shortest caption: 6. Longest caption: 57. Mean = 11.3, Med = 11 (ex. start/stop tokens)
+
+
+def get_split_info(self, split_file):
+    with open(split_file) as fin:
+        split_info = json.load(fin)
+    annos = {}
+    for item in split_info['images']:
+        if self.split == 'train':
+            if item['split'] == 'train' or item['split'] == 'restval':
+                annos[item['cocoid']] = item
+        elif item['split'] == self.split:
+            annos[item['cocoid']] = item
+    return annos, list(self.annos.keys())
+
 
 # ================================
 # Data Loader Class
