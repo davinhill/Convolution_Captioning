@@ -19,17 +19,17 @@ import json
 # Shortest caption: 6. Longest caption: 57. Mean = 11.3, Med = 11 (ex. start/stop tokens)
 
 
-def get_split_info(self, split_file):
+def get_split_info(self, split_file, split):
     with open(split_file) as fin:
         split_info = json.load(fin)
     annos = {}
     for item in split_info['images']:
-        if self.split == 'train':
+        if split == 'train':
             if item['split'] == 'train' or item['split'] == 'restval':
                 annos[item['cocoid']] = item
-        elif item['split'] == self.split:
+        elif item['split'] == split:
             annos[item['cocoid']] = item
-    return annos, list(self.annos.keys())
+    return annos, list(annos.keys())
 
 
 # ================================
