@@ -127,9 +127,10 @@ def test_accy(dataloader, coco_object, image_model, caption_model, epoch, args):
         counter_batch = 0
 
         # set number of batches on which to calculate test metrics
-        for batchID, (image, _, caption_tknID, imgID) in enumerate(trainloader):
-            import pdb; pdb.set_trace(0)
-            pred_caption_str, pred_caption_tknID, pred_caption_prob = gen_caption(image, image_model, caption_model, args.vocab_size, args.max_cap_len, image_id)
+        for batchID, (image, _, caption_tknID, imgID) in enumerate(dataloader):
+            import pdb; pdb.set_trace()
+            caption_tknID = caption_tknID.squeeze()
+            pred_caption_str, pred_caption_tknID, pred_caption_prob = gen_caption(image, image_model, caption_model, args.vocab_size, args.max_cap_len, imgID)
             pred.extend(pred_caption_str)
             # reshape caption to account for num captions per image
             batch_size = image.shape[0]
