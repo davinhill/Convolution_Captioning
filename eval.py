@@ -11,6 +11,7 @@ import os
 import json
 import torch.nn.functional as F
 import torch
+import torch.nn as nn
 
 
 # ================================
@@ -123,30 +124,20 @@ def test_accy(dataloader, coco_object, image_model, caption_model, epoch, args):
         word_accy = 0
         loss = 0
         counter_num_words = 0
+        counter_batch = 0
 
         # set number of batches on which to calculate test metrics
-        if epoch >= (args.num_epochs -3):
-            num_batches = 41000 // args.batch_size
-        else:
-            num_batches = args.num_test_batches
-
-        # loop over # of batches
-        data_iterator = iter(dataloader)
-        for i in range(num_batches):  # iterate for the specified number of batches
-            try:
-                image, _, caption_tknID, image_id = next(data_iterator)
-            except StopIteration:
-                data_iterator = iter(dataloader)
-                image, _, caption_tknID, image_id = next(data_iterator)
-
+        for batchID, (image, _, caption_tknID, imgID) in enumerate(trainloader):
+            import pdb; pdb.set_trace(0)
             pred_caption_str, pred_caption_tknID, pred_caption_prob = gen_caption(image, image_model, caption_model, args.vocab_size, args.max_cap_len, image_id)
             pred.extend(pred_caption_str)
             # reshape caption to account for num captions per image
-            batch_size = image.shape[0] 
+            batch_size = image.shape[0]
+            ''' 
             caption_tknID = caption_tknID.reshape(batch_size * args.num_caps_per_img, args.max_cap_len) #batch_size * 5 x max_cap_len
             pred_caption_tknID = pred_caption_tknID.unsqueeze(1).expand(-1, args.num_caps_per_img, -1).reshape(batch_size * args.num_caps_per_img, -1) # batch_size * 5 x max_cap_len
             pred_caption_prob = pred_caption_prob.unsqueeze(1).expand(-1, args.num_caps_per_img, -1, -1).flatten(end_dim = 1) # batch_size * 5 x max_cap_len x vocab_size
-
+            '''
 
             # reshape pred / GT such that pred does not include <S>
             caption_tknID = caption_tknID[:, 1:] # (batch_size * 5) x (max_cap_len - 1)
@@ -159,11 +150,12 @@ def test_accy(dataloader, coco_object, image_model, caption_model, epoch, args):
             word_mask = caption_tknID.nonzero().flatten() # the word mask filters out "unused words" when the GT caption is shorter than the max caption length.
 
             # calculate test loss 
-            loss += F.cross_entropy(pred_caption_prob[word_mask, :], caption_tknID[word_mask]).item()
+            loss += nn.CrossEntropyLoss(pred_caption_prob[word_mask, :], caption_tknID[word_mask]).item()
             word_accy += sum(pred_caption_tknID[word_mask].cpu() == caption_tknID[word_mask].cpu()).item()
             counter_num_words += len(word_mask)
+            counter_batch += 1
 
-    return eval_accy(pred, coco_object), loss / num_batches, word_accy / counter_num_words
+    return eval_accy(pred, coco_object), loss / counter_batch, word_accy / counter_num_words
 
 
 
