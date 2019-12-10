@@ -125,6 +125,7 @@ def test_accy(dataloader, coco_object, image_model, caption_model, epoch, args):
         loss = 0
         counter_num_words = 0
         counter_batch = 0
+        criterion = nn.CrossEntropyLoss()
 
         # set number of batches on which to calculate test metrics
         for batchID, (image, _, caption_tknID, imgID) in enumerate(dataloader):
@@ -145,7 +146,7 @@ def test_accy(dataloader, coco_object, image_model, caption_model, epoch, args):
             word_mask = caption_tknID.nonzero().flatten() # the word mask filters out "unused words" when the GT caption is shorter than the max caption length.
 
             # calculate test loss 
-            loss += nn.CrossEntropyLoss(pred_caption_prob[word_mask, :], caption_tknID[word_mask]).item()
+            loss += criterion(pred_caption_prob[word_mask, :], caption_tknID[word_mask]).item()
             word_accy += sum(pred_caption_tknID[word_mask].cpu() == caption_tknID[word_mask].cpu()).item()
             counter_num_words += len(word_mask)
             counter_batch += 1
