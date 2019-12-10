@@ -247,5 +247,5 @@ for epoch in range(init_epoch, args.num_epochs):
     torch.save(checkpoint, os.path.join(args.model_save_path, 'checkpoint.pt'))
 
     # Save highest-scoring model
-    if accy['Bleu_1'] >= max([value['Bleu_1'] for value in test_scores]):
+    if accy['CIDEr'] >= max([value['CIDEr'] for value in test_scores]):
         torch.save(checkpoint, os.path.join(args.model_save_path, 'best_model.pt'))
