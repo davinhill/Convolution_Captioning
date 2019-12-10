@@ -185,7 +185,7 @@ for epoch in range(init_epoch, args.num_epochs):
         counter_batch += 1
         counter_words += len(word_mask)
 
-        if batchID % 2000 == 0:
+        if batchID % 3000 == 0:
             epoch_time = datetime.now() - batch_start
             print("Batch: %d || Loss: %f || Time: %s" % (batchID, loss, str(epoch_time)))
 

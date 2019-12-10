@@ -11,4 +11,4 @@ cd /u/training/instr030/code_directory
 . /opt/modules/default/init/bash # NEEDED to add module commands to shell
 module load python/2.0.1
 #module load cudatoolkit
-aprun -n 1 -N 1 python ~/scratch/Convolution_Captioning/train.py --num_epochs 30 --attention True --model_save_path ./PBS_files/saved_models_7/ --img_model densenet --load_model ./PBS_files/saved_models_7/checkpoint.pt --accy_file ./PBS_files/saved_models_7/model_accuracy.json
+aprun -n 1 -N 1 python ~/scratch/Convolution_Captioning/train.py --num_epochs 30 --attention True --model_save_path ./PBS_files/saved_models_7/ --img_model densenet --batch_size 15

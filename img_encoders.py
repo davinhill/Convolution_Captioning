@@ -72,12 +72,12 @@ class densenet_extraction(nn.Module):
     def __init__(self, img_feat):
         super(densenet_extraction, self).__init__()
 
-        densenet_pretrained = models.densenet121(pretrained=True)
+        densenet_pretrained = models.densenet161(pretrained=True)
 
         # 7 x 7 x 1024
         self.feature_layers = densenet_pretrained.features
-        self.downsample = nn.Conv2d(in_channels = 1024, out_channels = 512, kernel_size = 1, stride = 1, padding = 0)
-        self.fc = nn.Linear(1024, img_feat)
+        self.downsample = nn.Conv2d(in_channels = 2208, out_channels = 512, kernel_size = 1, stride = 1, padding = 0)
+        self.fc = nn.Linear(2208, img_feat)
 
     def forward(self, x):
         # output of convolutions layers (for attention calculations)
