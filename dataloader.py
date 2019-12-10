@@ -73,13 +73,15 @@ class coco_loader(Dataset):
         cap_dict = self.annotations[sample_image_id]['sentences']
         caption = [item['raw'] for item in cap_dict]  # list of 5 captions
 
-        if self.split == 'val':
-            caption = caption[np.random.randint(0, len(caption))]
 
         # tokenize caption and convert to IDs
         caption_tknID = []
-        for i in range(self.num_captions_per_img):
-            caption_tknID.append(caption_to_id(caption[i], self.dictionary, self.vocab_size, self.max_cap_len))
+        if self.split == 'val':
+            caption = caption[np.random.randint(0, len(caption))]
+            caption_tknID.append(caption_to_id(caption, self.dictionary, self.vocab_size, self.max_cap_len))
+        else:
+            for i in range(self.num_captions_per_img):
+                caption_tknID.append(caption_to_id(caption[i], self.dictionary, self.vocab_size, self.max_cap_len))
 
         return img, caption, torch.LongTensor(caption_tknID), sample_image_id
     
