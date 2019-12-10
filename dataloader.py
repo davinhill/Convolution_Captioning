@@ -38,9 +38,10 @@ def get_split_info(split_file, split):
 # ================================
 class coco_loader(Dataset):
 
-    def __init__(self, data_path, ann_path, vocab_size, max_cap_len, transform=None, num_caps_per_img = 5):
+    def __init__(self, data_path, ann_path, vocab_size, max_cap_len, split, transform=None, num_caps_per_img = 5):
 
-        self.annotations, self.img_ids = get_split_info(ann_path, 'train')
+        self.split = split
+        self.annotations, self.img_ids = get_split_info(ann_path, self.split)
 
         self.transform = transform
         self.path = data_path
@@ -60,8 +61,9 @@ class coco_loader(Dataset):
         sample_image_id = self.img_ids[ID]
 
         # load images from disk
-        img_path = self.annotations[sample_image_id]['filename']
-        img = Image.open(os.path.join(self.path, img_path)).convert('RGB')
+        img_name = self.annotations[sample_image_id]['filename']
+        img_path = self.annotations[sample_image_id]['filepath']
+        img = Image.open(os.path.join(self.path, img_path, img_name)).convert('RGB')
 
         # image transforms
         if self.transform:
@@ -70,6 +72,9 @@ class coco_loader(Dataset):
         # get captions from image ID
         cap_dict = self.annotations[sample_image_id]['sentences']
         caption = [item['raw'] for item in cap_dict]  # list of 5 captions
+
+        if self.split == 'val':
+            caption = caption[np.random.randint(0, len(caption))]
 
         # tokenize caption and convert to IDs
         caption_tknID = []
@@ -82,38 +87,6 @@ class coco_loader(Dataset):
 
 
 
-
-# ======================================================
-    # Dataloader for the validation set (loads by imageID instead of annotationID)
-# ======================================================
-class coco_loader_val(Dataset):
-
-    def __init__(self, data_path, ann_path, vocab_size, max_cap_len, transform=None):
-
-        self.annotations, self.img_ids = get_split_info(ann_path, 'val')
-        self.transform = transform
-        self.path = data_path
-
-
-    def __len__(self):
-        return len(self.img_ids)
-
-    def __getitem__(self, ID):
-
-        # load images from disk
-        img_path = self.coco.loadImgs(self.img_ids[ID])[0]['file_name']
-        img = Image.open(os.path.join(self.path, img_path)).convert('RGB')
-
-        # image transforms
-        if self.transform:
-            img = self.transform(img)
-        '''
-        ann_ids = self.coco.getAnnIds(self.img_ids[ID])
-        cap_dict = self.coco.loadAnns(ann_ids)
-        captions = [item['caption'] for item in cap_dict] 
-        '''
-
-        return img, self.img_ids[ID]
 
 # ================================
 # Input a single caption (string), add start/end/unknown tokens, then convert to IDs
@@ -169,6 +142,7 @@ def caption_to_id(caption, dictionary, vocab_size, max_cap_len):
 # ================================
 def load_data(path, batch_size, vocab_size, max_cap_len, n_workers=4, num_caps_per_img=5):
 
+    # data transforms taken from torchvision models
     data_transforms = {
         'train': transforms.Compose([
             transforms.Resize([224, 224]),
@@ -184,20 +158,22 @@ def load_data(path, batch_size, vocab_size, max_cap_len, n_workers=4, num_caps_p
     }
 
     trainset = coco_loader(data_path=os.path.join(
-        path, 'train2014/'), 
+        path), 
         ann_path=os.path.join(path, 'dataset_coco.json'),
         vocab_size = vocab_size,
         max_cap_len = max_cap_len,
+        split = 'train',
         transform=data_transforms['train'],
         num_caps_per_img = num_caps_per_img,
         )
     trainloader = DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=n_workers)
 
     valset = coco_loader(data_path=os.path.join(
-        path, 'val2014/'), 
+        path), 
         ann_path=os.path.join(path, 'dataset_coco.json'),
         vocab_size = vocab_size,
         max_cap_len = max_cap_len,
+        split = 'val',
         transform=data_transforms['val'],
         num_caps_per_img = num_caps_per_img,
         )
