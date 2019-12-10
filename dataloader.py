@@ -90,9 +90,7 @@ class coco_loader_val(Dataset):
 
     def __init__(self, data_path, ann_path, vocab_size, max_cap_len, transform=None):
 
-        self.coco = COCO(ann_path)
-        self.img_ids = self.coco.getImgIds(imgIds=[])
-
+        self.annotations, self.img_ids = get_split_info(ann_path, 'val')
         self.transform = transform
         self.path = data_path
 
@@ -187,7 +185,7 @@ def load_data(path, batch_size, vocab_size, max_cap_len, n_workers=4, num_caps_p
 
     trainset = coco_loader(data_path=os.path.join(
         path, 'train2014/'), 
-        ann_path=os.path.join(path, 'annotations/captions_train2014.json'),
+        ann_path=os.path.join(path, 'dataset_coco.json'),
         vocab_size = vocab_size,
         max_cap_len = max_cap_len,
         transform=data_transforms['train'],
@@ -197,7 +195,7 @@ def load_data(path, batch_size, vocab_size, max_cap_len, n_workers=4, num_caps_p
 
     valset = coco_loader(data_path=os.path.join(
         path, 'val2014/'), 
-        ann_path=os.path.join(path, 'annotations/captions_val2014.json'),
+        ann_path=os.path.join(path, 'dataset_coco.json'),
         vocab_size = vocab_size,
         max_cap_len = max_cap_len,
         transform=data_transforms['val'],
