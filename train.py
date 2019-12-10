@@ -68,13 +68,14 @@ if args.img_model == 'resnet':
     print('Loading Resnet18 Image Encoder...')
     model_vgg = resnet_extraction(args.img_feat)
 elif args.img_model == 'densenet':
-    print('Loading Densenet121 Image Encoder...')
+    print('Loading Densenet161 Image Encoder...')
     model_vgg = densenet_extraction(args.img_feat)
 else:
     print('Loading VGG16 Image Encoder...')
     model_vgg = vgg_extraction(args.img_feat)
 model_vgg.to(device)
-
+print('Temperature = ', args.temperature)
+print('Attention = ', args.attention)
 
 # Initialize optimizer
 optimizer = torch.optim.RMSprop(model_cc.parameters(), lr = args.initial_lr)
