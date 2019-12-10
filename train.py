@@ -166,7 +166,7 @@ for epoch in range(init_epoch, args.num_epochs):
         word_mask = caption_target.nonzero().reshape(-1) # the word mask filters out "unused words" when the GT caption is shorter than the max caption length.
 
         # calculate Cross-Entropy loss
-        loss = criterion(caption_pred[word_mask, :]/args.temperature, caption_target[word_mask]/args.temperature)   
+        loss = criterion(caption_pred[word_mask, :]/args.temperature, caption_target[word_mask])   
         word_accy = sum(np.argmax(caption_pred[word_mask, :].cpu().detach(), axis = 1) == caption_target[word_mask].cpu())
 
         loss.backward()
