@@ -38,7 +38,7 @@ parser.add_argument('--img_feat', type=int, default=512, help = 'number of featu
 parser.add_argument('--word_feat', type=int, default=512, help = 'number of features in word embedding layer. Should be divisible by 2.')
 parser.add_argument('--dropout_p', type=float, default=0.1, help = 'dropout probability parameter')
 parser.add_argument('--train_vgg', type=int, default=8, help = 'the number of epochs after which the image extractor network will start training')
-parser.add_argument('--attention', type=bool, default=False, help = 'use attention?')
+parser.add_argument('--attention', type=str, default='False', help = 'use attention?')
 parser.add_argument('--num_caps_per_img', type=int, default=5, help = 'number of captions per image in training set (should be 5 in coco)')
 parser.add_argument('--model_save_path', type=str, default=os.path.dirname('./saved_models/'), help = 'where models are saved')
 parser.add_argument('--load_model', type=str, default=None, help = 'provide the path of a model if you are loading a checkpoint')
@@ -166,7 +166,12 @@ for epoch in range(init_epoch, args.num_epochs):
         word_mask = caption_target.nonzero().reshape(-1) # the word mask filters out "unused words" when the GT caption is shorter than the max caption length.
 
         # calculate Cross-Entropy loss
-        loss = criterion(caption_pred[word_mask, :]/args.temperature, caption_target[word_mask])   
+        if args.attention:
+            loss = criterion(caption_pred[word_mask, :]/args.temperature, caption_target[word_mask]) + \
+                torch.mean(torch.pow(1 - torch.sum(attn_score, 1), 2))
+        else:
+            loss = criterion(caption_pred[word_mask, :]/args.temperature, caption_target[word_mask])   
+        
         word_accy = sum(np.argmax(caption_pred[word_mask, :].cpu().detach(), axis = 1) == caption_target[word_mask].cpu())
 
         loss.backward()
