@@ -18,8 +18,9 @@ import json
 
 # Shortest caption: 6. Longest caption: 57. Mean = 11.3, Med = 11 (ex. start/stop tokens)
 
-
-def get_split_info(self, split_file, split):
+# from conv-cap model
+# https://github.com/aditya12agd5/convcap
+def get_split_info(split_file, split):
     with open(split_file) as fin:
         split_info = json.load(fin)
     annos = {}
@@ -39,8 +40,7 @@ class coco_loader(Dataset):
 
     def __init__(self, data_path, ann_path, vocab_size, max_cap_len, transform=None, num_caps_per_img = 5):
 
-        self.coco = COCO(ann_path)
-        self.img_ids = self.coco.getImgIds(imgIds=[])
+        self.annotations, self.img_ids = get_split_info(ann_path, 'train')
 
         self.transform = transform
         self.path = data_path
@@ -60,7 +60,7 @@ class coco_loader(Dataset):
         sample_image_id = self.img_ids[ID]
 
         # load images from disk
-        img_path = self.coco.loadImgs(sample_image_id)[0]['file_name']
+        img_path = self.annotations[sample_image_id]['filename']
         img = Image.open(os.path.join(self.path, img_path)).convert('RGB')
 
         # image transforms
@@ -68,9 +68,8 @@ class coco_loader(Dataset):
             img = self.transform(img)  # 3 x 224 x 224
 
         # get captions from image ID
-        ann_ids = self.coco.getAnnIds(sample_image_id)
-        cap_dict = self.coco.loadAnns(ann_ids)
-        caption = [item['caption'] for item in cap_dict]  # list of 5 captions
+        cap_dict = self.annotations[sample_image_id]['sentences']
+        caption = [item['raw'] for item in cap_dict]  # list of 5 captions
 
         # tokenize caption and convert to IDs
         caption_tknID = []
