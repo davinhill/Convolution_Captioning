@@ -42,8 +42,7 @@ def wordlist_to_string(caption_tkn):
 # 'predictions' is a list of dictionary objects, with 'image_id' and 'caption'
 # ================================
 def eval_accy(predictions, coco_object):
-    resfile = 'tmp_resfile.json'
-    json.dump(predictions, open(resfile, 'w'))
+    resfile = json.dumps(predictions)
     coco_results = coco_object.loadRes(resfile)
 
     coco_eval = COCOEvalCap(coco_object, coco_results)
