@@ -20,6 +20,7 @@ import json
 
 # from conv-cap model
 # https://github.com/aditya12agd5/convcap
+#Splits from http://cs.stanford.edu/people/karpathy/deepimagesent/caption_datasets.zip
 def get_split_info(split_file, split):
     with open(split_file) as fin:
         split_info = json.load(fin)

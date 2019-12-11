@@ -65,8 +65,8 @@ class AttnBlock(nn.Module):
 
         # Attention Layers
         attn_channels = 512 # number of channels in vgg convolution layer output, for use in attention
-        self.attn_fc1 = nn.Linear(word_feat, attn_channels)
-        self.attn_fc2 = nn.Linear(attn_channels, word_feat)
+        self.attn_fc1 = nn.Linear(output_feat // 2 , attn_channels)
+        self.attn_fc2 = nn.Linear(attn_channels, output_feat // 2)
 
     def forward(self, list_input):
         
