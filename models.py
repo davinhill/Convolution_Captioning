@@ -103,36 +103,34 @@ class conv_captioning(nn.Module):
         super(conv_captioning, self).__init__()
 
         self.attn = args.attention
+        self.glove = args.use_glove
 
         # Embedding Layers
-        emb_layers = []
         if not args.use_glove: 
             # if using self-created word embedding
-            word_embedding0 = nn.Embedding(vocab_size, word_feat)
-            word_embedding1 = nn.utils.weight_norm(nn.Linear(word_feat, word_feat))
+            self.word_embedding0 = nn.Embedding(vocab_size, word_feat)
+            self.word_embedding1 = nn.utils.weight_norm(nn.Linear(word_feat, word_feat))
+
+            if args.freeze_embed:
+                print('Freezing embedding weights...')
+                self.word_embedding0.weight.requires_grad = False  # freeze parameters
+
+        else:
+            # if using pretrained glove features:
+            self.word_embedding0 = nn.Embedding(vocab_size, 300)
+            self.word_embedding1 = nn.utils.weight_norm(nn.Linear(300, word_feat))
+
+            print('Loading glove features...')
+            glove_feat = np.load('embed/glove_embeddings.npy')  # load glove features
+            glove_feat = glove_feat[:vocab_size, :]  # truncate to vocab_size
+
+            word_embedding0.weight.data.copy_(torch.from_numpy(glove_feat))  # load glove features into embedding layer
 
             if args.freeze_embed:
                 print('Freezing embedding weights...')
                 word_embedding0.weight.requires_grad = False  # freeze parameters
 
-            emb_layers.append(word_embedding0)
-            emb_layers.append(word_embedding1)
-        else:
-            # if using pretrained glove features:
-            print('Loading glove features...')
-            glove_feat = np.load('embed/glove_embeddings.npy')  # load glove features
-            glove_feat = glove_feat[:vocab_size, :]  # truncate to vocab_size
 
-            embed = nn.Embedding(vocab_size, 300)
-            embed.weight.data.copy_(torch.from_numpy(glove_feat))  # load glove features into embedding layer
-
-            if args.freeze_embed:
-                print('Freezing embedding weights...')
-                embed.weight.requires_grad = False  # freeze parameters
-
-            emb_layers.append(embed)
-            emb_layers.append(nn.utils.weight_norm(nn.Linear(300, word_feat)))
-        self.embedding = nn.Sequential(*emb_layers)
 
 
         # Convolution / Attention layers
@@ -160,7 +158,8 @@ class conv_captioning(nn.Module):
     def forward(self, caption_tknID, img_fc, img_conv):
 
         # Embedding Layers
-        word_embed = self.embedding(caption_tknID)
+        word_embed = self.word_embedding0(caption_tknID)
+        word_embed = self.word_embedding1(word_embed)
         # word_embed: n x (max_cap_len) x 512
         # image_embed: n x 512
 
