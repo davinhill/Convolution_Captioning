@@ -108,14 +108,15 @@ class conv_captioning(nn.Module):
         emb_layers = []
         if not args.use_glove: 
             # if using self-created word embedding
-            embed = nn.Embedding(vocab_size, word_feat)
+            word_embedding0 = nn.Embedding(vocab_size, word_feat)
+            word_embedding1 = nn.utils.weight_norm(nn.Linear(word_feat, word_feat))
 
             if args.freeze_embed:
                 print('Freezing embedding weights...')
-                embed.weight.requires_grad = False  # freeze parameters
+                word_embedding0.weight.requires_grad = False  # freeze parameters
 
-            emb_layers.append(embed)
-            emb_layers.append(nn.utils.weight_norm(nn.Linear(word_feat, word_feat)))
+            emb_layers.append(word_embedding0)
+            emb_layers.append(word_embedding1)
         else:
             # if using pretrained glove features:
             print('Loading glove features...')
