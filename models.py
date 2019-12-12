@@ -123,11 +123,11 @@ class conv_captioning(nn.Module):
             glove_feat = np.load('embed/glove_embeddings.npy')  # load glove features
             glove_feat = glove_feat[:vocab_size, :]  # truncate to vocab_size
 
-            word_embedding0.weight.data.copy_(torch.from_numpy(glove_feat))  # load glove features into embedding layer
+            self.word_embedding0.weight.data.copy_(torch.from_numpy(glove_feat))  # load glove features into embedding layer
 
             if args.freeze_embed:
                 print('Freezing embedding weights...')
-                word_embedding0.weight.requires_grad = False  # freeze parameters
+                self.word_embedding0.weight.requires_grad = False  # freeze parameters
 
 
 
