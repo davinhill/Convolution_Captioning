@@ -2,30 +2,9 @@ import torch
 import torch.nn as nn
 from torchvision import models
 import torch.nn.functional as F
+import numpy as np
 
 
-# ======================================================
-    # VGG16 Model for extracting image features
-# ======================================================
-vgg_pretrained = models.vgg16(pretrained = True)
-class vgg_extraction(nn.Module):
-    def __init__(self, img_feat):
-        super(vgg_extraction, self).__init__()
-
-        self.feature_layers = vgg_pretrained.features  # all convolution layers in VGG, final layer is maxpool
-        
-        layers = []
-        layers.append(vgg_pretrained.classifier[:-1])  # all fc layers, excluding final linear layer
-        layers.append(nn.Linear(4096, img_feat)) # apply fc layer. final output is 512 dim.
-        self.fc = nn.Sequential(*layers)
-
-    def forward(self, x):
-        output_conv = self.feature_layers(x)  # output of convolutions layers (for attention calculations)
-        output_fc = self.fc(torch.flatten(output_conv, 1))  # output of fc layers (for image embedding)
-        return output_conv, output_fc
-
-
-        
         
 class ConvBlock(nn.Module):
     def __init__(self, input_feat, output_feat, kernel_size, dropout_p):
@@ -120,13 +99,37 @@ class AttnBlock(nn.Module):
     # Convolution Captioning Model
 # ======================================================
 class conv_captioning(nn.Module):
-    def __init__(self, vocab_size, kernel_size, num_layers, dropout_p, word_feat, input_feat, attn):
+    def __init__(self, vocab_size, kernel_size, num_layers, dropout_p, word_feat, input_feat, args):
         super(conv_captioning, self).__init__()
 
-        self.attn = attn
+        self.attn = args.attention
+
         # Embedding Layers
-        self.word_embedding0 = nn.Embedding(vocab_size, word_feat)
-        self.word_embedding1 = nn.utils.weight_norm(nn.Linear(word_feat, word_feat))
+        emb_layers = []
+        if not args.use_glove: 
+            # if using self-created word embedding
+            embed = nn.Embedding(vocab_size, word_feat)
+
+            if args.freeze_embed:
+                embed.weight.requires_grad = False  # freeze parameters
+
+            emb_layers.append(embed)
+            emb_layers.append(nn.utils.weight_norm(nn.Linear(word_feat, word_feat)))
+        else:
+            # if using pretrained glove features:
+            glove_feat = np.load('embed/glove_embeddings.npy')  # load glove features
+            glove_feat = glove_feat[:vocab_size, :]  # truncate to vocab_size
+
+            embed = nn.Embedding(vocab_size, 300)
+            embed.weight.data.copy_(torch.from_numpy(glove_feat))  # load glove features into embedding layer
+
+            if args.freeze_embed:
+                embed.weight.requires_grad = False  # freeze parameters
+
+            emb_layers.append(embed)
+            emb_layers.append(nn.utils.weight_norm(nn.Linear(300, word_feat)))
+        self.embedding = nn.Sequential(*emb_layers)
+
 
         # Convolution / Attention layers
         conv_layers = []
@@ -153,8 +156,7 @@ class conv_captioning(nn.Module):
     def forward(self, caption_tknID, img_fc, img_conv):
         
         # Embedding Layers
-        word_embed = self.word_embedding0(caption_tknID)
-        word_embed = self.word_embedding1(word_embed)
+        word_embed = self.embedding(caption_tknID)
         # word_embed: n x (max_cap_len) x 512
         # image_embed: n x 512
 

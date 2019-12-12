@@ -4,14 +4,14 @@ Data Folder
 create folder 'coco_data2017'
 inside this folder, download the data and unzip
 
-wget http://images.cocodataset.org/zips/train2017.zip
-unzip -q train2017.zip
+wget http://images.cocodataset.org/zips/train2014.zip
+unzip -q train2014.zip
 
-wget http://images.cocodataset.org/zips/val2017.zip
-unzip -q val2017.zip
+wget http://images.cocodataset.org/zips/val2014.zip
+unzip -q val2014.zip
 
 
-wget http://images.cocodataset.org/annotations/annotations_trainval2017.zip
+wget http://images.cocodataset.org/annotations/annotations_trainval2014.zip
 unzip -q annotations.zip
 
 
@@ -19,15 +19,15 @@ in the annotations folder, create a new python script and run the following code
 
 
 import json
-with open('captions_val2017.json', 'r') as f:
+with open('captions_val2014.json', 'r') as f:
     data = json.load(f)
     data['type'] = 'captions'
-with open('captions_val2017.json', 'w') as f:
+with open('captions_val2014.json', 'w') as f:
     json.dump(data, f)
 
-with open('captions_train2017.json', 'r') as f:
+with open('captions_train2014.json', 'r') as f:
     data = json.load(f)
     data['type'] = 'captions'
-with open('captions_train2017.json', 'w') as f:
+with open('captions_train2014.json', 'w') as f:
     json.dump(data, f)
 
