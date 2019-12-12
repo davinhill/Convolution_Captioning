@@ -49,7 +49,7 @@ class coco_loader(Dataset):
         self.vocab_size = vocab_size
         self.max_cap_len = max_cap_len
 
-        with open('/embed/word_to_id.p', 'rb') as fp:
+        with open('./embed/word_to_id.p', 'rb') as fp:
             self.dictionary = pickle.load(fp)
         
         self.num_captions_per_img = num_caps_per_img

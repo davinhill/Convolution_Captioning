@@ -119,7 +119,7 @@ def test_accy(dataloader, coco_object, image_model, caption_model, epoch, args):
 
         # initialize counters
         pred = []
-        id_conversion_array = np.load('/embed/id_to_word.npy')
+        id_conversion_array = np.load('./embed/id_to_word.npy')
         word_accy = 0
         loss = 0
         counter_num_words = 0
