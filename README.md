@@ -2,12 +2,11 @@
 
 
 ## Downloading Data
-=====================
 
 create folder 'coco_data2014' one level above the cloned repo.
 inside this folder, download the data and unzip
 
-```python
+```bash
 wget http://images.cocodataset.org/zips/train2014.zip
 unzip -q train2014.zip
 
