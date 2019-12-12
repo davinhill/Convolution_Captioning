@@ -9,8 +9,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--path', type=str, default='./', help='path of file')
 
 args = parser.parse_args()
+import pdb; pdb.set_trace()
 
-datafile = json.load(args.path)
+datafile = json.load(open(args.path, 'r'))
 df = pd.DataFrame()
 
 for key in datafile[0]:
@@ -18,4 +19,4 @@ for key in datafile[0]:
 
 import pdb; pdb.set_trace()
 
-df.to_csv('model_accuracy.csv')
+df.to_csv(os.path.join(args.path, 'model_accuracy.csv'))
