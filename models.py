@@ -157,12 +157,12 @@ class conv_captioning(nn.Module):
         self.drop1 = nn.Dropout(p = dropout_p)
 
     def forward(self, caption_tknID, img_fc, img_conv):
-        import pdb; pdb.set_trace() 
+
         # Embedding Layers
         word_embed = self.embedding(caption_tknID)
         # word_embed: n x (max_cap_len) x 512
         # image_embed: n x 512
-        import pdb; pdb.set_trace()
+
         # Reshape image embedding & concatenate with word embedding
         img_embed = img_fc.unsqueeze(1).expand(-1, word_embed.shape[1], -1)
         input_embed = torch.cat((word_embed, img_embed), 2).transpose(1, 2) # n x 1024 x (max_cap_len)

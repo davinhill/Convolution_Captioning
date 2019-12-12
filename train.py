@@ -65,7 +65,7 @@ coco_testaccy = COCO(os.path.join(args.data_path, 'annotations/captions_val2014.
 # Initialize Models
 model_cc = conv_captioning(args.vocab_size, args.kernel_size, args.num_layers, args.dropout_p, args.word_feat, args.img_feat + args.word_feat, args)
 model_cc_params = filter(lambda p: p.requires_grad, model_cc.parameters())
-import pdb; pdb.set_trace()
+
 model_cc.to(device)
 
 if args.img_model == 'resnet':
@@ -190,7 +190,7 @@ for epoch in range(init_epoch, args.num_epochs):
         counter_batch += 1
         counter_words += len(word_mask)
 
-        if batchID % 3000 == 0:
+        if batchID % 500 == 0:
             epoch_time = datetime.now() - batch_start
             print("Batch: %d || Loss: %f || Time: %s" % (batchID, loss, str(epoch_time)))
 
