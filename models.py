@@ -103,7 +103,6 @@ class conv_captioning(nn.Module):
         super(conv_captioning, self).__init__()
 
         self.attn = args.attention
-        self.glove = args.use_glove
 
         # Embedding Layers
         if not args.use_glove: 
