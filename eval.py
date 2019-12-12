@@ -90,7 +90,7 @@ def gen_caption(image, image_model, caption_model, vocab_size, max_cap_len = 15,
         caption_prob[:, i+1, :] = pred.transpose(1, 2)[:, i, :]
     
     # convert IDs to words
-    id_conversion_array = np.load('id_to_word.npy')
+    id_conversion_array = np.load('/embed/id_to_word.npy')
     caption_tkn = []
     for i in range(batch_size):
         caption_tkn.append(id_to_word(caption_tknID[i, :], id_conversion_array))
