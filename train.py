@@ -15,7 +15,7 @@ import json
 
 from models import conv_captioning
 from dataloader import load_data
-from eval import test_accy, id_to_word, gen_caption
+from eval import test_accy, id_to_word, gen_caption, dict_to_df
 from img_encoders import vgg_extraction, resnet_extraction, densenet_extraction
 
 # ======================================================
@@ -253,3 +253,7 @@ for epoch in range(init_epoch, args.num_epochs):
     # Save highest-scoring model
     if accy['CIDEr'] >= max([value['CIDEr'] for value in test_scores]):
         torch.save(checkpoint, os.path.join(args.model_save_path, 'best_model.pt'))
+
+
+dict_to_df(accy, args.model_save_path)
+print('End Training at Epoch ', args.num_epoch -1)

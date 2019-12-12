@@ -12,7 +12,7 @@ import json
 import torch.nn.functional as F
 import torch
 import torch.nn as nn
-
+import pandas as pd
 
 # ================================
 # Convert ID to Words
@@ -35,6 +35,18 @@ def wordlist_to_string(caption_tkn):
         output = ' '.join(caption_tkn[1:])
     
     return output
+
+
+# ================================
+# convert model_accuracy file to pandas dataframe and save
+# ================================
+def dict_to_df(accy_file, path):
+    df = pd.DataFrame()
+
+    for key in accy_file[0]:
+        df[key] = [value[key] for value in accy_file]
+
+    df.to_csv(os.path.join(path, 'model_accuracy.csv'))
 
 
 # ================================
