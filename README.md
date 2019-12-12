@@ -1,5 +1,10 @@
 # Convolution_Captioning
 
+## Overview
+
+Implementation of https://arxiv.org/abs/1711.09151
+
+
 
 ## Downloading Data
 
@@ -20,7 +25,7 @@ wget http://cs.stanford.edu/people/karpathy/deepimagesent/caption_datasets.zip
 unzip -q caption_datasets.zip
 ```
 
-in the annotations folder, create a new python script and run the following code. Otherwise it will have issues with the pycoco api
+Sometimes the PycocoAPI has issues with the annotation file. In the annotations folder, create a new python script and run the following code.
 
 ```python
 import json
