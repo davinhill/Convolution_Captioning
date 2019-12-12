@@ -92,7 +92,6 @@ criterion = nn.CrossEntropyLoss()
 
 test_scores = [] # initialize saved scores
 init_epoch = 0
-id_to_word = np.load('./embed/id_to_word.npy')
 
 # ======================================================
     # Load Model
@@ -194,10 +193,9 @@ for epoch in range(init_epoch, args.num_epochs):
         if batchID % 500 == 0:
             epoch_time = datetime.now() - batch_start
             print("Batch: %d || Loss: %f || Time: %s" % (batchID, loss, str(epoch_time)))
-
             
             # Print an example caption
-            z, _, _ = gen_caption(image, model_vgg, model_cc, args.vocab_size, id_to_word, args.max_cap_len)
+            z, _, _ = gen_caption(image, model_vgg, model_cc, args.vocab_size, args.max_cap_len)
             print('TEST------------------')
             print(z[0])
 

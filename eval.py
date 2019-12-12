@@ -62,7 +62,7 @@ def eval_accy(predictions, coco_object):
 # if imgID (the list of image IDs assocated with the provided images), this function will return a list of dictionary
 # objects, with 'image_id' and 'caption', for use with the CocoEvalAPI.
 # ================================
-def gen_caption(image, image_model, caption_model, vocab_size, id_conversion_array, max_cap_len = 15, imgID = None):
+def gen_caption(image, image_model, caption_model, vocab_size, max_cap_len = 15, imgID = None):
 
     batch_size = image.shape[0]
     caption_tknID = torch.zeros(batch_size, max_cap_len, dtype = torch.long)# initialize tkn predictions
@@ -90,6 +90,7 @@ def gen_caption(image, image_model, caption_model, vocab_size, id_conversion_arr
         caption_prob[:, i+1, :] = pred.transpose(1, 2)[:, i, :]
     
     # convert IDs to words
+    id_conversion_array = np.load('id_to_word.npy')
     caption_tkn = []
     for i in range(batch_size):
         caption_tkn.append(id_to_word(caption_tknID[i, :], id_conversion_array))
@@ -119,7 +120,6 @@ def test_accy(dataloader, coco_object, image_model, caption_model, epoch, args):
 
         # initialize counters
         pred = []
-        id_conversion_array = np.load('./embed/id_to_word.npy')
         word_accy = 0
         loss = 0
         counter_num_words = 0
@@ -129,7 +129,7 @@ def test_accy(dataloader, coco_object, image_model, caption_model, epoch, args):
         # set number of batches on which to calculate test metrics
         for batchID, (image, _, caption_tknID, imgID) in enumerate(dataloader):
             caption_tknID = caption_tknID.squeeze()
-            pred_caption_str, pred_caption_tknID, pred_caption_prob = gen_caption(image, image_model, caption_model, args.vocab_size, id_conversion_array, args.max_cap_len, imgID)
+            pred_caption_str, pred_caption_tknID, pred_caption_prob = gen_caption(image, image_model, caption_model, args.vocab_size, args.max_cap_len, imgID)
             pred.extend(pred_caption_str)
             # reshape caption to account for num captions per image
             batch_size = image.shape[0]
