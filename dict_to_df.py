@@ -16,5 +16,5 @@ df = pd.DataFrame()
 for key in datafile[0]:
     df[key] = [value[key] for value in datafile]
 
-df.to_csv(os.path.join(args.path, 'model_accuracy.csv'))
+df.to_csv(os.path.join(os.path.dirname(args.path), 'model_accuracy.csv'))
 
