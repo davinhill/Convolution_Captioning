@@ -47,6 +47,8 @@ parser.add_argument('--temperature', type=float, default=1, help='temperature so
 parser.add_argument('--print_accy', type=int, default=1, help='how often to calculate test accy (# epochs)')
 parser.add_argument('--img_model', type=str, default='vgg', help='vgg, resnet, or densenet')
 parser.add_argument('--num_test_batches', type=int, default=500, help='number of batches to use when calculating test accy. always uses full dataset for the last epoch.')
+parser.add_argument('--use_glove', type=bool, default=False, help='use the pre-trained glove features for the word embedding?')
+parser.add_argument('--freeze_embed', type=bool, default=False, help='freeze the word embed layer')
 
 args = parser.parse_args()
 
@@ -61,7 +63,9 @@ trainloader, valloader = load_data(path = args.data_path, batch_size = args.batc
 coco_testaccy = COCO(os.path.join(args.data_path, 'annotations/captions_val2014.json')) # create coco object for test accuracy calculation
 
 # Initialize Models
-model_cc = conv_captioning(args.vocab_size, args.kernel_size, args.num_layers, args.dropout_p, args.word_feat, args.img_feat + args.word_feat, args.attention)
+model_cc = conv_captioning(args.vocab_size, args.kernel_size, args.num_layers, args.dropout_p, args.word_feat, args.img_feat + args.word_feat, args)
+model_cc_params = filter(lambda p: p.requires_grad, model_cc.parameters())
+
 model_cc.to(device)
 
 if args.img_model == 'resnet':
@@ -78,7 +82,7 @@ print('Temperature = ', args.temperature)
 print('Attention = ', args.attention)
 
 # Initialize optimizer
-optimizer = torch.optim.RMSprop(model_cc.parameters(), lr = args.initial_lr)
+optimizer = torch.optim.RMSprop(model_cc_params, lr = args.initial_lr)
 scheduler = torch.optim.lr_scheduler.StepLR(optimizer, gamma = args.scheduler_gamma, step_size = args.scheduler_stepsize )
 optimizer_vgg = torch.optim.RMSprop(model_vgg.parameters(), lr = args.initial_lr)
 scheduler_vgg = torch.optim.lr_scheduler.StepLR(optimizer_vgg, gamma = args.scheduler_gamma, step_size = args.scheduler_stepsize )
@@ -186,10 +190,9 @@ for epoch in range(init_epoch, args.num_epochs):
         counter_batch += 1
         counter_words += len(word_mask)
 
-        if batchID % 3000 == 0:
+        if batchID % 500 == 0:
             epoch_time = datetime.now() - batch_start
             print("Batch: %d || Loss: %f || Time: %s" % (batchID, loss, str(epoch_time)))
-
             
             # Print an example caption
             z, _, _ = gen_caption(image, model_vgg, model_cc, args.vocab_size, args.max_cap_len)
