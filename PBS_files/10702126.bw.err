@@ -1,0 +1,2 @@
+/var/spool/torque/mom_priv/jobs/10702126.bw.SC: line 22: cd: /u/training/instr030/code_directory: Permission denied
+/mnt/bwpy/single/usr/lib/python-exec/python3.5/python: can't open file '/u/training/tra154/scratch/Convolution_Captioning/train_testing.py': [Errno 2] No such file or directory

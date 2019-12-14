@@ -1,0 +1,18 @@
+----------------------------------------
+Begin Torque Prologue on nid25357
+at Fri Dec 13 01:04:32 CST 2019
+Job Id:			10702126.bw
+Username:		tra154
+Group:			TRAIN_bayw
+Job name:		CC_proj
+Requested resources:	nodes=01:ppn=16:xk,walltime=47:00:00,neednodes=01:ppn=16:xk
+Queue:			normal
+Account:		bayw
+End Torque Prologue:  0.102 elapsed
+----------------------------------------
+
+
+
+
+Application 83076604 exit codes: 2
+Application 83076604 resources: utime ~0s, stime ~0s, Rss ~8820, inblocks ~1494, outblocks ~2
