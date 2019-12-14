@@ -17,7 +17,7 @@ import json
 from json import encoder
 encoder.FLOAT_REPR = lambda o: format(o, '.3f')
 import sys
-
+from eval import eval_accy
 
 def language_eval(input_data, savedir, split):
   if type(input_data) == str: # Filename given.
@@ -36,9 +36,11 @@ def language_eval(input_data, savedir, split):
   #for i in range(len_p):
   #  preds_filt[i]['image_id'] = int(preds_filt[i]['image_id'])
   print('Using %d/%d predictions' % (len(preds_filt), len(preds)))
+  '''
   resFile = osp.join(savedir, 'result_%s.json' % (split))
   json.dump(preds_filt, open(resFile, 'w')) # Serialize to temporary json file. Sigh, COCO API...
-
+  '''
+  resFile = json.dumps(preds_filt)
   cocoRes = coco.loadRes(resFile)
   cocoEval = COCOEvalCap(coco, cocoRes)
   cocoEval.params['image_id'] = cocoRes.getImgIds()
@@ -48,6 +50,7 @@ def language_eval(input_data, savedir, split):
   out = {}
   for metric, score in cocoEval.eval.items():
     out[metric] = score
+
 
   # Return aggregate and per image score.
   return out, cocoEval.evalImgs
