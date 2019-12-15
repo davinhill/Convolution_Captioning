@@ -255,5 +255,4 @@ for epoch in range(init_epoch, args.num_epochs):
         torch.save(checkpoint, os.path.join(args.model_save_path, 'best_model.pt'))
 
 
-dict_to_df(accy, args.model_save_path)
 print('End Training at Epoch ', args.num_epoch -1)
