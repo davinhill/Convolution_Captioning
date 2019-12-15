@@ -3,6 +3,35 @@
 ## Overview
 
 Implementation of https://arxiv.org/abs/1711.09151
+Please refer to the file ************** for details behind the motivation and results of this repo
+
+
+## File Descriptions
+
+### Training
+
+For training, we need to run the **train.py** file. Please use the option --help to see the list of arguments.
+
+For loading partially (or fully) trained models, please use the options --load_model and --accy_file to input the paths to the saved model and accuracy file.
+
+
+### Testing
+
+The **test_w_beamsearch** file takes similar inputs as the train.py file, and will ouput the test results for a specified number of beams. Please note that you must have the same arguments when loading the model as when the model was trained (so that the saved states can be loaded correctly)
+
+### Other Files / Folders
+
+**models.py** Code for the Convolution Captioning model class.
+
+**img_encoders.py** Code for the 3 different image encoders implemented (VGG19, Resnet18, Densenet161)
+
+**eval.py** Code for generating caption predictions and calculating the test accuracy (beam size == 1). Also contains functions for converting tokensIDs to words.
+
+The folder **embed** Includes files related to preprocessing:
+* **Create_word_embedding.ipynb** Jupyter Notebook for creating the tokenized vocabulary
+* **preproc_glove.py** Script for calling downloading the GloVe pretrained word encoding and fitting it to our vocabulary
+
+**dict_to_df.py** Helper script for converting the model_accuracy.json dictionary file to a pandas dataframe (and saving as csv)
 
 
 
