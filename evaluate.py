@@ -25,21 +25,23 @@ def language_eval(input_data, savedir, split):
     preds = checkpoint
   elif type(input_data) == list: # Direct predictions give.
     preds = input_data
-  print("in eval")
+  
   annFile = '../coco_data2014/annotations/captions_val2014.json'
   coco = COCO(annFile)
   valids = coco.getImgIds()
 
   # Filter results to only those in MSCOCO validation set (will be about a third)
   preds_filt = [p for p in preds if p['image_id'] in valids]
-  #len_p = len(preds_filt)
-  #for i in range(len_p):
-  #  preds_filt[i]['image_id'] = int(preds_filt[i]['image_id'])
+  len_p = len(preds_filt)
+  for i in range(len_p):
+    preds_filt[i]['image_id'] = int(preds_filt[i]['image_id'])
   print('Using %d/%d predictions' % (len(preds_filt), len(preds)))
   '''
-  resFile = osp.join(savedir, 'result_%s.json' % (split))
-  json.dump(preds_filt, open(resFile, 'w')) # Serialize to temporary json file. Sigh, COCO API...
+  resFile1 = osp.join(savedir, 'result_%s.json' % (split))
+  json.dump(preds_filt, open(resFile1, 'w')) # Serialize to temporary json file. Sigh, COCO API...
   '''
+  
+  
   resFile = json.dumps(preds_filt)
   cocoRes = coco.loadRes(resFile)
   cocoEval = COCOEvalCap(coco, cocoRes)

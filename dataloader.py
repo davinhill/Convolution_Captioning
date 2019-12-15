@@ -180,7 +180,7 @@ def load_data(path, batch_size, vocab_size, max_cap_len, n_workers=4, num_caps_p
         transform=data_transforms['val'],
         num_caps_per_img = num_caps_per_img,
         )
-    valloader = DataLoader(valset, batch_size=batch_size, shuffle=True, num_workers=n_workers)
+    valloader = DataLoader(valset, batch_size=batch_size, shuffle=False, num_workers=n_workers)
 
     return trainloader, valloader
 
