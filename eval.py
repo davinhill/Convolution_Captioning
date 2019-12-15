@@ -127,7 +127,7 @@ def gen_caption(image, image_model, caption_model, vocab_size, max_cap_len = 15,
 # ================================
 # Calculate test accuracy based on a given dataloader
 # ================================
-def test_accy(dataloader, coco_object, image_model, caption_model, epoch, args):
+def test_accy(dataloader, coco_object, image_model, caption_model, args):
     with torch.no_grad():
 
         # initialize counters
@@ -137,12 +137,13 @@ def test_accy(dataloader, coco_object, image_model, caption_model, epoch, args):
         counter_num_words = 0
         counter_batch = 0
         criterion = nn.CrossEntropyLoss()
-
+        x = []
         # set number of batches on which to calculate test metrics
         for batchID, (image, _, caption_tknID, imgID) in enumerate(dataloader):
             caption_tknID = caption_tknID.squeeze()
             pred_caption_str, pred_caption_tknID, pred_caption_prob = gen_caption(image, image_model, caption_model, args.vocab_size, args.max_cap_len, imgID)
             pred.extend(pred_caption_str)
+            x.extend(pred_caption_tknID)
             # reshape caption to account for num captions per image
             batch_size = image.shape[0]
 
@@ -162,7 +163,7 @@ def test_accy(dataloader, coco_object, image_model, caption_model, epoch, args):
             counter_num_words += len(word_mask)
             counter_batch += 1
 
-    return eval_accy(pred, coco_object), loss / counter_batch, word_accy / counter_num_words
+    return x
 
 
 
