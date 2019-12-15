@@ -71,10 +71,10 @@ class AttnBlock(nn.Module):
 
         # Calc softmax on each attn channel
         attn_score = torch.matmul(x, attn_feat) # n x max_cap_len x 49
-        rs = attn_score.size()  # n x 512 x 49
+        rs = attn_score.size()  # n x max_cap_len x 49
         attn_score = attn_score.flatten(end_dim = 1) # (n * max_cap_len) x 49
         attn_score = F.softmax(attn_score, 1) # I don't necessarily think this is correct, at least according to the paper?
-        attn_score = attn_score.reshape(rs) # n x 512 x 49
+        attn_score = attn_score.reshape(rs) # n x max_cap_len x 49
         x = torch.matmul(attn_score, attn_feat.transpose(1, 2)) # n x max_cap_len x 512
 
         # up/downsample x to revert it back to the convolution layer output dimensions
