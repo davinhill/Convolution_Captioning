@@ -18,6 +18,8 @@ from json import encoder
 encoder.FLOAT_REPR = lambda o: format(o, '.3f')
 import sys
 from eval import eval_accy
+import glob
+import shutil
 
 def language_eval(input_data, savedir, split):
   if type(input_data) == str: # Filename given.
@@ -35,11 +37,14 @@ def language_eval(input_data, savedir, split):
   len_p = len(preds_filt)
   for i in range(len_p):
     preds_filt[i]['image_id'] = int(preds_filt[i]['image_id'])
+    pattern = str(preds_filt[i]['image_id'])
+    for file in glob.glob(r'../coco_data2014/val2014/*'+pattern+'*'):
+      shutil.copy(file, './saved_models/third/')
   print('Using %d/%d predictions' % (len(preds_filt), len(preds)))
-  '''
+  
   resFile1 = osp.join(savedir, 'result_%s.json' % (split))
   json.dump(preds_filt, open(resFile1, 'w')) # Serialize to temporary json file. Sigh, COCO API...
-  '''
+  
   
   
   resFile = json.dumps(preds_filt)
