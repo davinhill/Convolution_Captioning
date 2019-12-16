@@ -30,6 +30,10 @@ The **test_w_beamsearch** file takes similar inputs as the train.py file, and wi
 
 **dataloader.py** Code for the pytorch dataloader used in our model
 
+**test_beam.py** Code for calling beamsearch functions
+
+**beamsearch.py** Functions for beam search implementation. It receives the multiple beams and the log probs and selects the top beam_size. Cloned directly from https://github.com/aditya12agd5/convcap
+
 The folder **embed** Includes files related to word embedding and preprocessing:
 * **Create_word_embedding.ipynb** Jupyter Notebook for creating the tokenized vocabulary
 * **preproc_glove.py** Script for calling downloading the GloVe pretrained word encoding and fitting it to our vocabulary
