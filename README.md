@@ -3,7 +3,8 @@
 ## Overview
 
 Implementation of https://arxiv.org/abs/1711.09151
-Please refer to the file ************** for details behind the motivation and results of this repo
+
+Please refer to the file ************** for details behind the motivation and results of this project.
 
 
 ## File Descriptions
@@ -27,11 +28,10 @@ The **test_w_beamsearch** file takes similar inputs as the train.py file, and wi
 
 **eval.py** Code for generating caption predictions and calculating the test accuracy (beam size == 1). Also contains functions for converting tokensIDs to words.
 
-The folder **embed** Includes files related to preprocessing:
+The folder **embed** Includes files related to word embedding and preprocessing:
 * **Create_word_embedding.ipynb** Jupyter Notebook for creating the tokenized vocabulary
 * **preproc_glove.py** Script for calling downloading the GloVe pretrained word encoding and fitting it to our vocabulary
-
-**dict_to_df.py** Helper script for converting the model_accuracy.json dictionary file to a pandas dataframe (and saving as csv)
+* **dict_to_df.py** Helper script for converting the model_accuracy.json dictionary file to a pandas dataframe (and saving as csv)
 
 
 
