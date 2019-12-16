@@ -4,7 +4,7 @@
 
 Implementation of https://arxiv.org/abs/1711.09151
 
-Please refer to the file ************** for details behind the motivation and results of this project.
+Please refer to the file final_report.py for details behind the motivation and results of this project.
 
 
 ## File Descriptions
@@ -27,6 +27,8 @@ The **test_w_beamsearch** file takes similar inputs as the train.py file, and wi
 **img_encoders.py** Code for the 3 different image encoders implemented (VGG19, Resnet18, Densenet161)
 
 **eval.py** Code for generating caption predictions and calculating the test accuracy (beam size == 1). Also contains functions for converting tokensIDs to words.
+
+**dataloader.py** Code for the pytorch dataloader used in our model
 
 The folder **embed** Includes files related to word embedding and preprocessing:
 * **Create_word_embedding.ipynb** Jupyter Notebook for creating the tokenized vocabulary
