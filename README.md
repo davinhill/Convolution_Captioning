@@ -4,7 +4,7 @@
 
 Implementation of https://arxiv.org/abs/1711.09151
 
-Please refer to the file final_report.py for details behind the motivation and results of this project.
+Please refer to the file final_report.pdf for details behind the motivation and results of this project.
 
 
 ## File Descriptions
