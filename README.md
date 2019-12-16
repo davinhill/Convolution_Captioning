@@ -4,7 +4,7 @@
 
 Implementation of Convolutional Image Captioning (2018) by J. Aneja, A. Deshpande, and A. G. Schwing. https://arxiv.org/abs/1711.09151
 
-Please refer to file **final_report.pdf** for details on the motivation and results of this project.
+Please refer to **final_report.pdf** for details on the motivation and results of this project.
 
 
 ## File Descriptions
