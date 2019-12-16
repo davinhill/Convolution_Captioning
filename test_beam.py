@@ -18,26 +18,30 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm 
 
 from beamsearch import beamsearch 
-from coco_loader import coco_loader
 from torchvision import models                                                                    
-#from convcap import convcap
-#from vggfeats import Vgg16Feats
-from evaluate import language_eval
+import sys
+sys.path.insert(0, '../coco_data2014')
 
+import numpy as np
+import os
+import os.path as osp
+from pycocotools.coco import COCO
+from pycocoevalcap.eval import COCOEvalCap
+import json
+from json import encoder
+encoder.FLOAT_REPR = lambda o: format(o, '.3f')
+from eval import eval_accy
+import glob
+import shutil
 import os
 os.chdir(os.path.dirname(os.path.realpath(__file__))) # needed for BlueWaters
 
-import sys
 sys.path.append('coco-caption')
 
-import torch
 from torchvision import models
 import torch.nn as nn
 import numpy as np
-from pycocotools.coco import COCO
-import argparse
 from datetime import datetime
-import json
 
 from models import conv_captioning
 from dataloader import load_data
@@ -63,7 +67,7 @@ def test_beam(args, split, modelfn=None):
 
     batchsize = args.batch_size
     max_tokens = args.max_cap_len
-    num_batches = 1
+    num_batches = 100
     print('[DEBUG] Running test (w/ beam search) on %d batches' % num_batches)
 
     model_cc = conv_captioning(args.vocab_size, args.kernel_size, args.num_layers, args.dropout_p, args.word_feat, args.img_feat + args.word_feat, args)
@@ -103,7 +107,7 @@ def test_beam(args, split, modelfn=None):
     pred_captions = []
     for batch_idx, (imgs, _, _, img_ids) in \
         tqdm(enumerate(data_loader), total=num_batches):
-        if batch_idx > 0:
+        if batch_idx > 99:
             break
         imgs = imgs.view(batchsize, 3, 224, 224)
 
@@ -157,3 +161,48 @@ def test_beam(args, split, modelfn=None):
     model_convcap.train(True)
 
     return scores
+
+def language_eval(input_data, savedir, split):
+  if type(input_data) == str: # Filename given.
+    checkpoint = json.load(open(input_data, 'r'))
+    preds = checkpoint
+  elif type(input_data) == list: # Direct predictions give.
+    preds = input_data
+  
+  annFile = '../coco_data2014/annotations/captions_val2014.json'
+  coco = COCO(annFile)
+  valids = coco.getImgIds()
+
+  # Filter results to only those in MSCOCO validation set (will be about a third)
+  preds_filt = [p for p in preds if p['image_id'] in valids]
+  len_p = len(preds_filt)
+  for i in range(len_p):
+    preds_filt[i]['image_id'] = int(preds_filt[i]['image_id'])
+    pattern = str(preds_filt[i]['image_id'])
+    '''
+    #RUN THIS PORTION ONLY DURING INFERENCE ON FEW IMAGES
+    for file in glob.glob(r'../coco_data2014/val2014/*'+pattern+'*'):
+      shutil.copy(file, './saved_models/third/')
+    '''
+  print('Using %d/%d predictions' % (len(preds_filt), len(preds)))
+  
+  resFile1 = osp.join(savedir, 'result_%s.json' % (split))
+  json.dump(preds_filt, open(resFile1, 'w')) # Serialize to temporary json file. Sigh, COCO API...
+  
+  
+  
+  resFile = json.dumps(preds_filt)
+  cocoRes = coco.loadRes(resFile)
+  cocoEval = COCOEvalCap(coco, cocoRes)
+  cocoEval.params['image_id'] = cocoRes.getImgIds()
+  cocoEval.evaluate()
+
+  # Create output dictionary.
+  out = {}
+  for metric, score in cocoEval.eval.items():
+    out[metric] = score
+
+
+  # Return aggregate and per image score.
+  return out, cocoEval.evalImgs
+
